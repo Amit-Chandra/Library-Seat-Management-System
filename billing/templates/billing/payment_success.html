@@ -1,0 +1,7 @@
+<!-- billing/templates/billing/payment_success.html -->
+{% extends "base.html" %}
+{% block content %}
+<h2>Payment Successful!</h2>
+<p>The payment has been recorded successfully.</p>
+<a href="{% url 'record_payment' %}">Record another payment</a>
+{% endblock %}
