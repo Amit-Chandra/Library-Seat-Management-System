@@ -60,3 +60,55 @@ class ApproveStudentAPI(APIView):
             return Response({'message': 'Student approved successfully'})
         else:
             return Response({'error': 'Payment not confirmed'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+# ======================================================================================
+
+class CreateLibraryAPI(APIView):
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        serializer = LibrarySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class RetrieveLibraryAPI(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, library_id):
+        library = get_object_or_404(Library, id=library_id)
+        serializer = LibrarySerializer(library)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class UpdateLibraryAPI(APIView):
+    permission_classes = [IsAdminUser]
+
+    def put(self, request, library_id):
+        library = get_object_or_404(Library, id=library_id)
+        serializer = LibrarySerializer(library, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class DeleteLibraryAPI(APIView):
+    permission_classes = [IsAdminUser]
+
+    def delete(self, request, library_id):
+        library = get_object_or_404(Library, id=library_id)
+        library.delete()
+        return Response({'message': 'Library deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+
+
+class ListLibrariesAPI(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        libraries = Library.objects.all()
+        serializer = LibrarySerializer(libraries, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
