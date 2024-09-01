@@ -19,11 +19,23 @@ from django.urls import path
 # library_management/urls.py
 from django.contrib import admin
 from django.urls import path, include
+# library_management/urls.py
+
+from django.contrib import admin
+from django.urls import path, include
+from library.regular_views import home
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('library.urls')),  # Include the app URLs
+    path('', home, name='home'),
+    path('library/', include('library.urls')),
 ]
+
+
+# urlpatterns = [
+#     path('admin/', admin.site.urls),
+#     path('', include('library.urls')),  # Include the app URLs
+# ]
 
 
 # urlpatterns = [

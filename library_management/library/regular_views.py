@@ -1,8 +1,11 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
-from library.models import Library, Seat, UserProfile, Payment
-from library.forms import StudentSignupForm, UserProfileForm
+from .models import Library, Seat, UserProfile, Payment
+from .forms import StudentSignupForm, UserProfileForm
+from django.shortcuts import render
+
+def home(request):
+    return render(request, 'library/home.html')
 
 def student_signup(request):
     if request.method == 'POST':
@@ -19,7 +22,7 @@ def student_signup(request):
 
 @login_required
 def student_profile(request):
-    profile = get_object_or_404(UserProfile, user=request.user)
+    profile = UserProfile.objects.get(user=request.user)
     if request.method == 'POST':
         form = UserProfileForm(request.POST, instance=profile)
         if form.is_valid():
@@ -36,15 +39,15 @@ def library_list(request):
 
 @login_required
 def seat_availability(request, library_id):
-    library = get_object_or_404(Library, id=library_id)
+    library = Library.objects.get(id=library_id)
     seats = library.seats.all()
     return render(request, 'library/seat_availability.html', {'library': library, 'seats': seats})
 
 @login_required
 def approve_student(request, student_id):
-    student = get_object_or_404(UserProfile, id=student_id)
+    student = UserProfile.objects.get(id=student_id)
     if request.method == 'POST' and request.user.userprofile.role == 'admin':
-        payment = Payment.objects.filter(student=student.user, is_confirmed=True).first()
+        payment = Payment.objects.get(student=student.user, is_confirmed=True)
         if payment:
             student.approved = True
             student.save()

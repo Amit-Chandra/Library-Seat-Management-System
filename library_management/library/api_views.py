@@ -3,8 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.shortcuts import get_object_or_404
-from library.models import Library, Seat, UserProfile, Payment
-from library.serializers import StudentSignupSerializer, UserProfileSerializer, LibrarySerializer, SeatSerializer
+from .models import Library, Seat, UserProfile, Payment
+from .serializers import StudentSignupSerializer, UserProfileSerializer, LibrarySerializer, SeatSerializer
 
 class StudentSignupAPI(APIView):
     def post(self, request):
@@ -54,7 +54,6 @@ class ApproveStudentAPI(APIView):
     def post(self, request, student_id):
         student = get_object_or_404(UserProfile, id=student_id)
         payment = Payment.objects.filter(student=student.user, is_confirmed=True).first()
-
         if payment:
             student.approved = True
             student.save()

@@ -1,8 +1,10 @@
 from django.urls import path
+from django.contrib import admin
 from .api_views import StudentSignupAPI, StudentProfileAPI, LibraryListAPI, SeatAvailabilityAPI, ApproveStudentAPI
 from .regular_views import student_signup, student_profile, library_list, seat_availability, approve_student
 
 urlpatterns = [
+    path('admin/', admin.site.urls),
     # API Endpoints
     path('api/signup/', StudentSignupAPI.as_view(), name='student_signup_api'),
     path('api/profile/', StudentProfileAPI.as_view(), name='student_profile_api'),
