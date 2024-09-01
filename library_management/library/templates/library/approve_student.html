@@ -1,0 +1,25 @@
+<!-- templates/approve_student.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approve Student</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <h2>Approve Student Access</h2>
+    <ul>
+        {% for student in pending_students %}
+            <li>
+                {{ student.name }} - {{ student.email }}
+                <form method="POST" action="{% url 'approve_student' student.id %}">
+                    {% csrf_token %}
+                    <input type="checkbox" name="payment_verified" value="True"> Payment Verified
+                    <button type="submit">Approve</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

@@ -1,0 +1,18 @@
+<!-- templates/seat_availability.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seat Availability</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <h2>Seat Availability for {{ library.name }}</h2>
+    <ul>
+        {% for seat in seats %}
+            <li>Seat {{ seat.number }} - {{ seat.status }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

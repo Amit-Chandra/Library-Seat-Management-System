@@ -50,3 +50,61 @@ def approve_student(request, student_id):
             student.save()
             return redirect('library_list')
     return render(request, 'library/approve_student.html', {'student': student})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# from django.shortcuts import render, redirect
+# from django.http import HttpResponse
+
+# def student_signup(request):
+#     # Your logic here
+#     return render(request, 'student_signup.html')
+
+# def library_list(request):
+#     # Your logic here
+#     libraries = []  # Replace with actual query
+#     return render(request, 'library_list.html', {'libraries': libraries})
+
+# def seat_availability(request):
+#     # Your logic here
+#     seats = []  # Replace with actual query
+#     library = {}  # Replace with actual library
+#     return render(request, 'seat_availability.html', {'seats': seats, 'library': library})
+
+# def student_profile(request):
+#     # Your logic here
+#     return render(request, 'student_profile.html')
+
+# def approve_student(request):
+#     # Your logic here
+#     pending_students = []  # Replace with actual query
+#     return render(request, 'approve_student.html', {'pending_students': pending_students})
