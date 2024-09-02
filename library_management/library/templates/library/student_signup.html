@@ -8,11 +8,22 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
-    <h2>Student Signup</h2>
+    <!-- <h2>Student Signup</h2>
     <form method="POST" action="{% url 'student_signup' %}">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit">Sign Up</button>
+    </form> -->
+    {% extends 'base.html' %}
+
+    {% block content %}
+    <h2>Student Signup</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Sign Up</button>
     </form>
+    {% endblock %}
+
 </body>
 </html>

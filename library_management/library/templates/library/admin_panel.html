@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Admin Panel</h2>
+  <a href="{% url 'create_admin' %}">Create Admin</a>
+  <ul>
+    {% for admin in admins %}
+      <li>
+        {{ admin.username }}
+        <a href="{% url 'update_admin' admin.id %}">Edit</a>
+        <a href="{% url 'delete_admin' admin.id %}">Delete</a>
+      </li>
+    {% endfor %}
+  </ul>
+{% endblock %}
