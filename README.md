@@ -1,3 +1,138 @@
+Certainly! Below are example requests for each of the APIs using Postman. I will provide you with the details for each request, including the HTTP method, URL, headers, and body where applicable.
+
+### 1. **StudentSignupAPI**
+
+- **Method:** POST
+- **URL:** `http://localhost:8000/api/students/signup/`
+- **Headers:**
+  - Content-Type: application/json
+- **Body (raw JSON):**
+  ```json
+  {
+    "username": "student_user",
+    "password": "password123",
+    "email": "student@example.com",
+    "first_name": "John",
+    "last_name": "Doe"
+  }
+  ```
+
+### 2. **StudentProfileAPI**
+
+- **Method:** GET
+- **URL:** `http://localhost:8000/api/students/profile/`
+- **Headers:**
+  - Authorization: Bearer <your-token>
+- **Body:** None
+
+- **Method:** PUT
+- **URL:** `http://localhost:8000/api/students/profile/`
+- **Headers:**
+  - Authorization: Bearer <your-token>
+  - Content-Type: application/json
+- **Body (raw JSON):**
+  ```json
+  {
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "newemail@example.com"
+  }
+  ```
+
+### 3. **LibraryListAPI**
+
+- **Method:** GET
+- **URL:** `http://localhost:8000/api/libraries/`
+- **Headers:**
+  - Authorization: Bearer <your-token>
+- **Body:** None
+
+### 4. **SeatAvailabilityAPI**
+
+- **Method:** GET
+- **URL:** `http://localhost:8000/api/libraries/{library_id}/seats/`
+- **Headers:**
+  - Authorization: Bearer <your-token>
+- **Body:** None
+
+### 5. **ApproveStudentAPI**
+
+- **Method:** POST
+- **URL:** `http://localhost:8000/api/students/{student_id}/approve/`
+- **Headers:**
+  - Authorization: Bearer <your-admin-token>
+- **Body:** None
+
+### 6. **CreateLibraryAPI**
+
+- **Method:** POST
+- **URL:** `http://localhost:8000/api/libraries/create/`
+- **Headers:**
+  - Authorization: Bearer <your-admin-token>
+  - Content-Type: application/json
+- **Body (raw JSON):**
+  ```json
+  {
+    "name": "New Library",
+    "location": "123 Library St",
+    "capacity": 100
+  }
+  ```
+
+### 7. **RetrieveLibraryAPI**
+
+- **Method:** GET
+- **URL:** `http://localhost:8000/api/libraries/{library_id}/`
+- **Headers:**
+  - Authorization: Bearer <your-token>
+- **Body:** None
+
+### 8. **UpdateLibraryAPI**
+
+- **Method:** PUT
+- **URL:** `http://localhost:8000/api/libraries/{library_id}/update/`
+- **Headers:**
+  - Authorization: Bearer <your-admin-token>
+  - Content-Type: application/json
+- **Body (raw JSON):**
+  ```json
+  {
+    "name": "Updated Library Name",
+    "capacity": 150
+  }
+  ```
+
+### 9. **DeleteLibraryAPI**
+
+- **Method:** DELETE
+- **URL:** `http://localhost:8000/api/libraries/{library_id}/delete/`
+- **Headers:**
+  - Authorization: Bearer <your-admin-token>
+- **Body:** None
+
+### 10. **ListLibrariesAPI**
+
+- **Method:** GET
+- **URL:** `http://localhost:8000/api/libraries/list/`
+- **Headers:**
+  - Authorization: Bearer <your-token>
+- **Body:** None
+
+In these examples, replace `<your-token>` and `<your-admin-token>` with actual tokens you obtain from the authentication process. Similarly, replace `{library_id}` and `{student_id}` with actual IDs from your database.
+
+Feel free to adjust the URLs and payloads as necessary based on your actual setup.
+
+
+
+
+
+
+
+
+
+
+
+
 To test your APIs with Postman, you'll need to provide sample requests for each endpoint defined in your api_views.py. Below, I'll give you a brief description of each API and provide sample requests for testing them in Postman.
 
 ### 1. *Student Signup API*
