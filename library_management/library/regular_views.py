@@ -3,8 +3,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User
 from django.contrib import messages
 from .models import Library, Seat, UserProfile, Payment
-from .forms import StudentSignupForm, UserProfileForm
-from django.shortcuts import LibraryForm
+from .forms import StudentSignupForm, UserProfileForm, LibraryForm
 
 def home(request):
     return render(request, 'library/home.html')
