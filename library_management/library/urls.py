@@ -25,16 +25,4 @@ urlpatterns = [
     path('admin/update/<int:admin_id>/', regular_views.update_admin, name='update_admin'),  # Update admin
     path('admin/delete/<int:admin_id>/', regular_views.delete_admin, name='delete_admin'),  # Delete admin
 
-
-    # path('signup/', student_signup, name='student_signup'),
-    # path('profile/', student_profile, name='student_profile'),
-    # path('libraries/', regular_views.library_list, name='library_list'),
-    # path('signup/', regular_views.student_signup, name='student_signup'),  
-    # path('profile/', regular_views.student_profile, name='student_profile'),
-    # path('libraries/<int:library_id>/seats/', regular_views.seat_availability, name='seat_availability'),
-    # path('approve_student/<int:student_id>/', regular_views.approve_student, name='approve_student'),
-    # path('libraries/', library_list, name='library_list'),
-    # path('libraries/', regular_views.library_list, name='library_list'),
-    # path('libraries/<int:library_id>/seats/', seat_availability, name='seat_availability'),
-    # path('approve_student/<int:student_id>/', approve_student, name='approve_student'),
 ]
