@@ -43,7 +43,7 @@ class SeatSerializer(serializers.ModelSerializer):
 class LibrarySerializer(serializers.ModelSerializer):
     class Meta:
         model = Library
-        fields = ['id', 'name', 'location', 'total_seats', 'available_seats']
+        fields = ['id', 'name', 'location', 'total_seats']
 
     def create(self, validated_data):
         # Custom logic can be added here if necessary
@@ -53,6 +53,6 @@ class LibrarySerializer(serializers.ModelSerializer):
         instance.name = validated_data.get('name', instance.name)
         instance.location = validated_data.get('location', instance.location)
         instance.total_seats = validated_data.get('total_seats', instance.total_seats)
-        instance.available_seats = validated_data.get('available_seats', instance.available_seats)
+        # instance.available_seats = validated_data.get('available_seats', instance.available_seats)
         instance.save()
         return instance

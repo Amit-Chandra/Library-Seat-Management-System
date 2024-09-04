@@ -1,8 +1,13 @@
 from django.urls import path
 from django.contrib import admin
-from .api_views import StudentSignupAPI, StudentProfileAPI, LibraryListAPI, SeatAvailabilityAPI, ApproveStudentAPI
+from .api_views import CreateLibraryAPI, StudentSignupAPI, StudentProfileAPI, LibraryListAPI, SeatAvailabilityAPI, ApproveStudentAPI
 from .regular_views import student_signup, student_profile, library_list, seat_availability, approve_student
 from . import regular_views
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+# from rest_framework_simplejwt.views import (
+#     TokenObtainPairView,
+#     TokenRefreshView,
+# )
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -12,6 +17,9 @@ urlpatterns = [
     path('api/libraries/', LibraryListAPI.as_view(), name='library_list_api'),
     path('api/libraries/<int:library_id>/seats/', SeatAvailabilityAPI.as_view(), name='seat_availability_api'),
     path('api/approve_student/<int:student_id>/', ApproveStudentAPI.as_view(), name='approve_student_api'),
+    path('api/admin/libraries/create/', CreateLibraryAPI.as_view(), name='create-library'),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
     # Regular Views
     path('', regular_views.home, name='home'),  # Home view
