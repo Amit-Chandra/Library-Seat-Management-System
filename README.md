@@ -1,243 +1,340 @@
-Certainly! Below are example requests for each of the APIs using Postman. I will provide you with the details for each request, including the HTTP method, URL, headers, and body where applicable.
+# Library Seat Management System API
 
-### 1. **StudentSignupAPI**
+This API provides endpoints to manage libraries, seats, and user authentication in the Library Seat Management System. The system is built using Django and Django REST Framework, and it uses JWT (JSON Web Token) for authentication.
 
-- **Method:** POST
-- **URL:** `http://localhost:8000/api/students/signup/`
-- **Headers:**
-  - Content-Type: application/json
-- **Body (raw JSON):**
+## Table of Contents
+
+- [Authentication](#authentication)
+  - [Obtain Token](#obtain-token)
+  - [Refresh Token](#refresh-token)
+- [Libraries](#libraries)
+  - [List Libraries](#list-libraries)
+  - [Create Library](#create-library)
+  - [Retrieve Library Details](#retrieve-library-details)
+  - [Update Library](#update-library)
+  - [Delete Library](#delete-library)
+- [Seats](#seats)
+  - [List Seats](#list-seats)
+  - [Create Seat](#create-seat)
+  - [Retrieve Seat Details](#retrieve-seat-details)
+  - [Update Seat](#update-seat)
+  - [Delete Seat](#delete-seat)
+
+## Authentication
+
+### Obtain Token
+
+Use this endpoint to obtain an access and refresh token by providing your username and password.
+
+- **Endpoint**: `/api/token/`
+- **Method**: `POST`
+- **Request Body**:
+
   ```json
   {
-    "username": "student_user",
-    "password": "password123",
-    "email": "student@example.com",
-    "first_name": "John",
-    "last_name": "Doe"
+    "username": "your_username",
+    "password": "your_password"
   }
   ```
 
-### 2. **StudentProfileAPI**
+- **Response**:
 
-- **Method:** GET
-- **URL:** `http://localhost:8000/api/students/profile/`
-- **Headers:**
-  - Authorization: Bearer <your-token>
-- **Body:** None
-
-- **Method:** PUT
-- **URL:** `http://localhost:8000/api/students/profile/`
-- **Headers:**
-  - Authorization: Bearer <your-token>
-  - Content-Type: application/json
-- **Body (raw JSON):**
   ```json
   {
-    "first_name": "John",
-    "last_name": "Doe",
-    "email": "newemail@example.com"
+    "refresh": "your_refresh_token",
+    "access": "your_access_token"
   }
   ```
 
-### 3. **LibraryListAPI**
+### Refresh Token
 
-- **Method:** GET
-- **URL:** `http://localhost:8000/api/libraries/`
-- **Headers:**
-  - Authorization: Bearer <your-token>
-- **Body:** None
+Use this endpoint to obtain a new access token using a refresh token.
 
-### 4. **SeatAvailabilityAPI**
+- **Endpoint**: `/api/token/refresh/`
+- **Method**: `POST`
+- **Request Body**:
 
-- **Method:** GET
-- **URL:** `http://localhost:8000/api/libraries/{library_id}/seats/`
-- **Headers:**
-  - Authorization: Bearer <your-token>
-- **Body:** None
+  ```json
+  {
+    "refresh": "your_refresh_token"
+  }
+  ```
 
-### 5. **ApproveStudentAPI**
+- **Response**:
 
-- **Method:** POST
-- **URL:** `http://localhost:8000/api/students/{student_id}/approve/`
-- **Headers:**
-  - Authorization: Bearer <your-admin-token>
-- **Body:** None
+  ```json
+  {
+    "access": "new_access_token"
+  }
+  ```
 
-### 6. **CreateLibraryAPI**
+## Libraries
 
-- **Method:** POST
-- **URL:** `http://localhost:8000/api/libraries/create/`
-- **Headers:**
-  - Authorization: Bearer <your-admin-token>
-  - Content-Type: application/json
-- **Body (raw JSON):**
+### List Libraries
+
+Retrieve a list of all libraries.
+
+- **Endpoint**: `/library/api/libraries/`
+- **Method**: `GET`
+- **Headers**:
+
+  ```http
+  Authorization: Bearer your_access_token
+  ```
+
+- **Response**:
+
+  ```json
+  [
+    {
+      "id": 1,
+      "name": "Central Library",
+      "location": "Main Campus",
+      "total_seats": 100,
+      "available_seats": 25
+    },
+    ...
+  ]
+  ```
+
+### Create Library
+
+Create a new library. Only super admins are allowed to create libraries.
+
+- **Endpoint**: `/library/api/libraries/`
+- **Method**: `POST`
+- **Headers**:
+
+  ```http
+  Authorization: Bearer your_access_token
+  ```
+
+- **Request Body**:
+
   ```json
   {
     "name": "New Library",
-    "location": "123 Library St",
-    "capacity": 100
+    "location": "South Campus",
+    "total_seats": 50
   }
   ```
 
-### 7. **RetrieveLibraryAPI**
+- **Response**:
 
-- **Method:** GET
-- **URL:** `http://localhost:8000/api/libraries/{library_id}/`
-- **Headers:**
-  - Authorization: Bearer <your-token>
-- **Body:** None
-
-### 8. **UpdateLibraryAPI**
-
-- **Method:** PUT
-- **URL:** `http://localhost:8000/api/libraries/{library_id}/update/`
-- **Headers:**
-  - Authorization: Bearer <your-admin-token>
-  - Content-Type: application/json
-- **Body (raw JSON):**
   ```json
   {
-    "name": "Updated Library Name",
-    "capacity": 150
+    "id": 2,
+    "name": "New Library",
+    "location": "South Campus",
+    "total_seats": 50,
+    "available_seats": 50
   }
   ```
 
-### 9. **DeleteLibraryAPI**
+### Retrieve Library Details
 
-- **Method:** DELETE
-- **URL:** `http://localhost:8000/api/libraries/{library_id}/delete/`
-- **Headers:**
-  - Authorization: Bearer <your-admin-token>
-- **Body:** None
+Retrieve details of a specific library by its ID.
 
-### 10. **ListLibrariesAPI**
+- **Endpoint**: `/library/api/libraries/{id}/`
+- **Method**: `GET`
+- **Headers**:
 
-- **Method:** GET
-- **URL:** `http://localhost:8000/api/libraries/list/`
-- **Headers:**
-  - Authorization: Bearer <your-token>
-- **Body:** None
+  ```http
+  Authorization: Bearer your_access_token
+  ```
 
-In these examples, replace `<your-token>` and `<your-admin-token>` with actual tokens you obtain from the authentication process. Similarly, replace `{library_id}` and `{student_id}` with actual IDs from your database.
+- **Response**:
 
-Feel free to adjust the URLs and payloads as necessary based on your actual setup.
+  ```json
+  {
+    "id": 1,
+    "name": "Central Library",
+    "location": "Main Campus",
+    "total_seats": 100,
+    "available_seats": 25
+  }
+  ```
 
+### Update Library
 
+Update details of a specific library. Only super admins can update library details.
 
+- **Endpoint**: `/library/api/libraries/{id}/`
+- **Method**: `PUT`
+- **Headers**:
 
+  ```http
+  Authorization: Bearer your_access_token
+  ```
 
+- **Request Body**:
 
+  ```json
+  {
+    "name": "Updated Library",
+    "location": "North Campus",
+    "total_seats": 150
+  }
+  ```
 
+- **Response**:
 
+  ```json
+  {
+    "id": 1,
+    "name": "Updated Library",
+    "location": "North Campus",
+    "total_seats": 150,
+    "available_seats": 150
+  }
+  ```
 
+### Delete Library
 
+Delete a specific library. Only super admins can delete a library.
 
+- **Endpoint**: `/library/api/libraries/{id}/`
+- **Method**: `DELETE`
+- **Headers**:
 
-To test your APIs with Postman, you'll need to provide sample requests for each endpoint defined in your api_views.py. Below, I'll give you a brief description of each API and provide sample requests for testing them in Postman.
+  ```http
+  Authorization: Bearer your_access_token
+  ```
 
-### 1. *Student Signup API*
-*Endpoint:* /api/signup/  
-*Method:* POST
+- **Response**:
 
-#### Sample Request Body:
-json
-{
-  "username": "john_doe",
-  "password": "password123",
-  "email": "john@example.com",
-  "first_name": "John",
-  "last_name": "Doe",
-  "role": "student",  // Possible values: "superadmin", "admin", "student"
-  "dob": "2000-01-01",
-  "hobbies": "Reading, Coding",
-  "contact_number": "1234567890",
-  "address": "123 Main St",
-  "geo_location": "37.7749,-122.4194",
-  "library": 1  // Assuming a library with ID 1 exists
-}
+  ```json
+  {
+    "detail": "Library deleted successfully."
+  }
+  ```
 
+## Seats
 
-### 2. *Student Profile API*
-*Endpoint:* /api/profile/  
-*Method:* GET
+### List Seats
 
-#### Sample Request Headers:
-- *Authorization*: Token <your_token> (Replace <your_token> with a valid authentication token if required)
+Retrieve a list of all seats in a specific library.
 
-*Note:* This API assumes the user is already authenticated and will retrieve the profile data of the currently logged-in user.
+- **Endpoint**: `/library/api/libraries/{library_id}/seats/`
+- **Method**: `GET`
+- **Headers**:
 
-### 3. *Library List API*
-*Endpoint:* /api/libraries/  
-*Method:* GET
+  ```http
+  Authorization: Bearer your_access_token
+  ```
 
-#### Sample Request:
-No request body is needed for this endpoint.
+- **Response**:
 
-#### Sample Request Headers:
-- *Authorization*: Token <your_token> (if authentication is required)
+  ```json
+  [
+    {
+      "id": 1,
+      "number": "A-01",
+      "is_booked": false
+    },
+    ...
+  ]
+  ```
 
-### 4. *Seat Availability API*
-*Endpoint:* /api/libraries/<int:library_id>/seats/  
-*Method:* GET
+### Create Seat
 
-#### Sample Request:
-Replace <int:library_id> with an actual library ID.
+Create a new seat in a specific library. Only admins of that library or super admins can create seats.
 
-For example, if you want to check the seat availability for a library with ID 1:
+- **Endpoint**: `/library/api/libraries/{library_id}/seats/`
+- **Method**: `POST`
+- **Headers**:
 
-GET /api/libraries/1/seats/
+  ```http
+  Authorization: Bearer your_access_token
+  ```
 
+- **Request Body**:
 
-#### Sample Request Headers:
-- *Authorization*: Token <your_token> (if authentication is required)
+  ```json
+  {
+    "number": "B-02"
+  }
+  ```
 
-### 5. *Approve Student API*
-*Endpoint:* /api/approve_student/<int:student_id>/  
-*Method:* POST
+- **Response**:
 
-#### Sample Request:
-Replace <int:student_id> with the ID of the student you want to approve.
+  ```json
+  {
+    "id": 2,
+    "number": "B-02",
+    "is_booked": false
+  }
+  ```
 
-For example, if you want to approve a student with ID 3:
+### Retrieve Seat Details
 
-POST /api/approve_student/3/
+Retrieve details of a specific seat by its ID.
 
+- **Endpoint**: `/library/api/libraries/{library_id}/seats/{id}/`
+- **Method**: `GET`
+- **Headers**:
 
-#### Sample Request Headers:
-- *Authorization*: Token <your_token> (if authentication is required)
+  ```http
+  Authorization: Bearer your_access_token
+  ```
 
-#### Sample Request Body:
-json
-{
-  "approved": true  // Set to true or false based on whether you're approving or rejecting the student
-}
+- **Response**:
 
+  ```json
+  {
+    "id": 1,
+    "number": "A-01",
+    "is_booked": false
+  }
+  ```
 
-### Testing with Postman
+### Update Seat
 
-1. *Open Postman*: Ensure you have Postman installed. If not, download it from the [Postman website](https://www.postman.com/).
+Update details of a specific seat. Only admins of that library or super admins can update seat details.
 
-2. *Create a New Request*: Click on "New" and select "Request".
+- **Endpoint**: `/library/api/libraries/{library_id}/seats/{id}/`
+- **Method**: `PUT`
+- **Headers**:
 
-3. *Set the Request Type*: Choose the appropriate HTTP method (GET, POST) from the dropdown next to the URL field.
+  ```http
+  Authorization: Bearer your_access_token
+  ```
 
-4. *Enter the URL*: Type the full URL of the API endpoint you want to test (e.g., http://127.0.0.1:8000/api/signup/).
+- **Request Body**:
 
-5. *Add Headers* (if needed):
-   - If authentication is required, add an Authorization header with the value Token <your_token>.
+  ```json
+  {
+    "number": "A-01",
+    "is_booked": true
+  }
+  ```
 
-6. *Enter the Request Body* (for POST requests):
-   - Click on the "Body" tab.
-   - Select "raw" and set the type to "JSON".
-   - Paste the sample JSON request body provided above.
+- **Response**:
 
-7. *Send the Request*: Click the "Send" button.
+  ```json
+  {
+    "id": 1,
+    "number": "A-01",
+    "is_booked": true
+  }
+  ```
 
-8. *View the Response*: Check the response pane in Postman to see the API's output, including status codes and response data.
+### Delete Seat
 
-### Notes:
-- *Authentication*: If your APIs are protected and require authentication, ensure that you use valid tokens or credentials.
-- *Testing Data*: Make sure the data you're sending in your requests aligns with what's expected by the backend. For instance, ensure that IDs like library and student_id exist in your database.
-- *CORS*: If you're testing from a different origin than your Django server, ensure CORS (Cross-Origin Resource Sharing) is properly set up in your Django settings.
+Delete a specific seat. Only admins of that library or super admins can delete a seat.
 
-By following the steps and using the sample requests provided, you should be able to effectively test each API endpoint in Postman.
+- **Endpoint**: `/library/api/libraries/{library_id}/seats/{id}/`
+- **Method**: `DELETE`
+- **Headers**:
+
+  ```http
+  Authorization: Bearer your_access_token
+  ```
+
+- **Response**:
+
+  ```json
+  {
+    "detail": "Seat deleted successfully."
+  }
+  ```
