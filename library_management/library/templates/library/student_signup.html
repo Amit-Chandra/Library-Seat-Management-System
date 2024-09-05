@@ -1,5 +1,43 @@
 <!-- templates/student_signup.html -->
-<!DOCTYPE html>
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h2 class="text-center mb-4">Student Signup</h2>
+
+            <!-- Signup Form -->
+            <form method="post" class="border p-4 rounded shadow-sm bg-light">
+                {% csrf_token %}
+                <!-- Render form fields -->
+                {{ form.as_p }}
+
+                <!-- Submit Button -->
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary">Sign Up</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,12 +46,6 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
-    <!-- <h2>Student Signup</h2>
-    <form method="POST" action="{% url 'student_signup' %}">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Sign Up</button>
-    </form> -->
     {% extends 'base.html' %}
 
     {% block content %}
@@ -26,4 +58,4 @@
     {% endblock %}
 
 </body>
-</html>
+</html> -->
