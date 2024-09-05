@@ -1,5 +1,52 @@
 <!-- templates/library_list.html -->
-<!DOCTYPE html>
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row mt-4">
+        <div class="col">
+            <h2 class="text-center mb-4">List of Libraries</h2>
+
+            <!-- Check if there are libraries available -->
+            {% if libraries %}
+                <div class="list-group">
+                    {% for library in libraries %}
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <strong>{{ library.name }}</strong>
+                            <span class="float-right text-muted">{{ library.location }}</span>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-center text-muted">No libraries available at the moment.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -16,4 +63,4 @@
         {% endfor %}
     </ul>
 </body>
-</html>
+</html> -->
