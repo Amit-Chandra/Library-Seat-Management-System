@@ -1,6 +1,62 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <h2 class="text-center mb-4">Admin Panel</h2>
+            
+            <!-- Create Admin Button -->
+            <div class="text-right mb-3">
+                <a href="{% url 'create_admin' %}" class="btn btn-primary">Create Admin</a>
+            </div>
+
+            <!-- Admin List -->
+            {% if admins %}
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for admin in admins %}
+                            <tr>
+                                <td>{{ admin.username }}</td>
+                                <td>
+                                    <a href="{% url 'update_admin' admin.id %}" class="btn btn-sm btn-warning">Edit</a>
+                                    <a href="{% url 'delete_admin' admin.id %}" class="btn btn-sm btn-danger">Delete</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p class="text-center text-muted">No admins available.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- {% extends 'base.html' %}
+
+{% block content %}
   <h2>Admin Panel</h2>
   <a href="{% url 'create_admin' %}">Create Admin</a>
   <ul>
@@ -12,4 +68,4 @@
       </li>
     {% endfor %}
   </ul>
-{% endblock %}
+{% endblock %} -->
