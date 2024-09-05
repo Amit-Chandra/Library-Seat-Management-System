@@ -93,7 +93,7 @@ Retrieve a list of all libraries.
       "total_seats": 100,
       "available_seats": 25
     },
-    ...
+    
   ]
   ```
 
@@ -232,7 +232,7 @@ Retrieve a list of all seats in a specific library.
       "number": "A-01",
       "is_booked": false
     },
-    ...
+    
   ]
   ```
 
