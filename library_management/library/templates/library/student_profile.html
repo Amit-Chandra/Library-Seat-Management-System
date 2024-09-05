@@ -1,18 +1,21 @@
-<!-- templates/student_profile.html -->
+<!-- library_management/library/templates/library/student_profile.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Profile</title>
+    <title>Profile</title>
+    {% load static %}
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
-    <h2>Student Profile</h2>
-    <form method="POST" action="{% url 'student_profile' %}">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Save Profile</button>
-    </form>
+    <h2>User Profile</h2>
+    {% if profile %}
+        <p><strong>Username:</strong> {{ profile.user.username }}</p>
+        <p><strong>Email:</strong> {{ profile.user.email }}</p>
+        <!-- Add more profile details as needed -->
+    {% else %}
+        <p>No profile found for this user.</p>
+    {% endif %}
 </body>
 </html>

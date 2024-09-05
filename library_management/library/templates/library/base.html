@@ -27,7 +27,10 @@
                         <a class="nav-link" href="{% url 'student_profile' %}">Profile</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                        <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <button class="btn btn-link nav-link" type="submit">Logout</button>
+                        </form>
                     </li>
                 {% else %}
                     <li class="nav-item">
@@ -60,14 +63,3 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
