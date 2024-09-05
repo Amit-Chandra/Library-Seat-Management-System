@@ -1,4 +1,5 @@
 from django.urls import path
+from django.contrib.auth import views as auth_views
 from django.contrib import admin
 from .api_views import CreateLibraryAPI, StudentSignupAPI, StudentProfileAPI, LibraryListAPI, SeatAvailabilityAPI, ApproveStudentAPI
 from .regular_views import student_signup, student_profile, library_list, seat_availability, approve_student
@@ -32,5 +33,6 @@ urlpatterns = [
     path('admin/create/', regular_views.create_admin, name='create_admin'),  # Create admin
     path('admin/update/<int:admin_id>/', regular_views.update_admin, name='update_admin'),  # Update admin
     path('admin/delete/<int:admin_id>/', regular_views.delete_admin, name='delete_admin'),  # Delete admin
+    path('accounts/logout/', auth_views.LogoutView.as_view(), name='logout'),
 
 ]
