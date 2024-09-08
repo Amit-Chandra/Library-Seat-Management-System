@@ -46,10 +46,10 @@ urlpatterns = [
     path('libraries/<int:library_id>/', RetrieveLibraryAPI.as_view(), name='retrieve_library'),
 
     # Update a specific library
-    path('libraries/<int:library_id>/update/', UpdateLibraryAPI.as_view(), name='update_library'),
+    path('libraries/update/<int:library_id>/', UpdateLibraryAPI.as_view(), name='update_library'),
 
     # Delete a specific library
-    path('libraries/<int:library_id>/delete/', DeleteLibraryAPI.as_view(), name='delete_library'),
+    path('libraries/delete/<int:library_id>/', DeleteLibraryAPI.as_view(), name='delete_library'),
 
     # List all libraries (This seems redundant with LibraryListAPI, so you may want to choose one or the other)
     path('libraries/all/', ListLibrariesAPI.as_view(), name='list_libraries'),
