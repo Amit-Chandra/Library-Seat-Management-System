@@ -5,6 +5,27 @@ from django.contrib import messages
 from .models import Library, Seat, UserProfile, Payment
 from .forms import StudentSignupForm, UserProfileForm, LibraryForm
 
+# from rest_framework_simplejwt.tokens import RefreshToken
+# from django.http import JsonResponse
+# from django.contrib.auth import authenticate
+
+# def login_view(request):
+#     user = authenticate(username=request.POST['username'], password=request.POST['password'])
+#     if user is not None:
+#         refresh = RefreshToken.for_user(user)
+
+#         response = JsonResponse({
+#             'message': 'Login successful',
+#             'refresh': str(refresh),
+#             'access': str(refresh.access_token),
+#         })
+
+#         # Set the access token as HttpOnly cookie
+#         response.set_cookie('access_token', str(refresh.access_token), httponly=True, secure=True)
+
+#         return response
+#     return JsonResponse({'error': 'Invalid credentials'}, status=400)
+
 def home(request):
     return render(request, 'library/home.html')
 
@@ -37,19 +58,12 @@ def student_profile(request):
         form = UserProfileForm(instance=profile)
     return render(request, 'library/student_profile.html', {'form': form})
 
-# @login_required
-# def library_list(request):
-#     """View for listing all libraries."""
-#     libraries = Library.objects.all()
-#     return render(request, 'library/library_list.html', {'libraries': libraries})
-
 @login_required
 def library_list(request):
-    # You may store the token after the user logs in and pass it to the template
-    token = request.session.get('access_token')
-    print("This is Access Token:", token)
+    """View for listing all libraries."""
     libraries = Library.objects.all()
-    return render(request, 'library/library_list.html', {'libraries': libraries, 'token': token})
+    return render(request, 'library/library_list.html', {'libraries': libraries})
+
 
 @login_required
 def seat_availability(request, library_id):

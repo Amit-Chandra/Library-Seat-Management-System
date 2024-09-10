@@ -13,6 +13,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    # path('login/', views.login_view, name='login'),
     # API Endpoints
     # path('api/signup/', StudentSignupAPI.as_view(), name='student_signup_api'),
     # path('api/profile/', StudentProfileAPI.as_view(), name='student_profile_api'),

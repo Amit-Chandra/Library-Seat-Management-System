@@ -20,8 +20,10 @@
 
 <script>
 // Function to fetch libraries using the access token
+const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoyMDQxMDEyODEyLCJpYXQiOjE3MjU2NTI4MTIsImp0aSI6IjZmNGM2YThmMWRlYjQxZGE4ODgzZmM3YTg2ZTVhMWM2IiwidXNlcl9pZCI6MX0.IE5bi2jTszUuZiokoqvIcKkwl2L0IE_Iy5rBBxIxSp8';
+
 async function fetchLibraries(accessToken) {
-    const apiUrl = '/libraries/';  // API endpoint
+    const apiUrl = '/library/libraries/';  // API endpoint
 
     try {
         const response = await fetch(apiUrl, {
@@ -64,16 +66,16 @@ async function fetchLibraries(accessToken) {
 }
 
 // Retrieve the access token from localStorage or sessionStorage
-const accessToken = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
+// const accessToken = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
 
 // Check if the token exists
-if (!accessToken) {
-    console.error('No access token found. Please log in.');
-    document.getElementById('loading-message').textContent = 'No access token found. Please log in.';
-} else {
-    // Proceed with the API call if the token is found
-    fetchLibraries(accessToken);
-}
+// if (!accessToken) {
+//     console.error('No access token found. Please log in.');
+//     document.getElementById('loading-message').textContent = 'No access token found. Please log in.';
+// } else {
+//     // Proceed with the API call if the token is found
+//     fetchLibraries(accessToken);
+// }
 </script>
 {% endblock %}
 
