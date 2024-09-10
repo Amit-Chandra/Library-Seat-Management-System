@@ -5,6 +5,9 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.shortcuts import get_object_or_404
 from .models import Library, Seat, UserProfile, Payment
 from .serializers import StudentSignupSerializer, UserProfileSerializer, LibrarySerializer, SeatSerializer
+from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
 
 class StudentSignupAPI(APIView):
     def post(self, request):
@@ -35,10 +38,13 @@ class LibraryListAPI(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        print(f"Authorization Header: {request.headers.get('Authorization')}")
+        # print(f"Authorization Header: {request.headers.get('Authorization')}")
         libraries = Library.objects.all()
         serializer = LibrarySerializer(libraries, many=True)
+        permission_classes = [IsAuthenticated]
         return Response(serializer.data)
+
+
 
 class SeatAvailabilityAPI(APIView):
     permission_classes = [IsAuthenticated]

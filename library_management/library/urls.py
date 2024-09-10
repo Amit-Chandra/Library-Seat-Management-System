@@ -26,19 +26,25 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
 
-    path('signup/', StudentSignupAPI.as_view(), name='student_signup'),
+    path('studentsignup/', StudentSignupAPI.as_view(), name='student_signup_api'),
+    path('signup/', student_signup, name='student_signup_api'),
 
     # Student Profile
-    path('profile/', StudentProfileAPI.as_view(), name='student_profile'),
+    # path('profile/', StudentProfileAPI.as_view(), name='student_profile'),
+    path('profileview/', StudentProfileAPI.as_view(), name='student_profile_api'),
+    path('profile/', student_profile, name='student_profile'),
 
     # Library List
-    path('libraries/', LibraryListAPI.as_view(), name='library_list'),
+    path('librarieslist/', LibraryListAPI.as_view(), name='library_list_api'),
+    path('libraries/', library_list, name='library_list'),
 
     # Seat Availability for a specific library
-    path('libraries/<int:library_id>/seats/', SeatAvailabilityAPI.as_view(), name='seat_availability'),
+    path('librarieslist/<int:library_id>/seats/', SeatAvailabilityAPI.as_view(), name='seat_availability_api'),
+    path('libraries/<int:library_id>/seats/', seat_availability, name='seat_availability'),
 
     # Approve a student
-    path('students/<int:student_id>/approve/', ApproveStudentAPI.as_view(), name='approve_student'),
+    path('studentsapproval/<int:student_id>/approve/', ApproveStudentAPI.as_view(), name='approve_student_api'),
+    path('students/<int:student_id>/approve/', approve_student, name='approve_student'),
 
     # Create a new library
     path('libraries/create/', CreateLibraryAPI.as_view(), name='create_library'),
