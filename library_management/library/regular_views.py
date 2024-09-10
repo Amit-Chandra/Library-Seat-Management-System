@@ -37,11 +37,19 @@ def student_profile(request):
         form = UserProfileForm(instance=profile)
     return render(request, 'library/student_profile.html', {'form': form})
 
+# @login_required
+# def library_list(request):
+#     """View for listing all libraries."""
+#     libraries = Library.objects.all()
+#     return render(request, 'library/library_list.html', {'libraries': libraries})
+
 @login_required
 def library_list(request):
-    """View for listing all libraries."""
+    # You may store the token after the user logs in and pass it to the template
+    token = request.session.get('access_token')
+    print("This is Access Token:", token)
     libraries = Library.objects.all()
-    return render(request, 'library/library_list.html', {'libraries': libraries})
+    return render(request, 'library/library_list.html', {'libraries': libraries, 'token': token})
 
 @login_required
 def seat_availability(request, library_id):

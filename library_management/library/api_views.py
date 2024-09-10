@@ -35,6 +35,7 @@ class LibraryListAPI(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        print(f"Authorization Header: {request.headers.get('Authorization')}")
         libraries = Library.objects.all()
         serializer = LibrarySerializer(libraries, many=True)
         return Response(serializer.data)

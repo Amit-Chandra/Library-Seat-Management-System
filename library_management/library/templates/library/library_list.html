@@ -7,7 +7,117 @@
         <div class="col">
             <h2 class="text-center mb-4">List of Libraries</h2>
 
-            <!-- Check if there are libraries available -->
+            <!-- Placeholder for showing the libraries -->
+            <div id="libraries-list" class="list-group">
+                <!-- Libraries will be loaded here by JavaScript -->
+            </div>
+
+            <!-- Placeholder for a loading state or message -->
+            <p id="loading-message" class="text-center text-muted">Loading libraries...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+// Function to fetch libraries using the access token
+async function fetchLibraries(accessToken) {
+    const apiUrl = '/libraries/';  // API endpoint
+
+    try {
+        const response = await fetch(apiUrl, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.status === 401) {
+            document.getElementById('loading-message').textContent = 'Unauthorized access. Please log in.';
+            return;
+        }
+
+        const libraries = await response.json();
+        const librariesList = document.getElementById('libraries-list');
+
+        document.getElementById('loading-message').style.display = 'none';
+
+        if (libraries.length > 0) {
+            libraries.forEach(library => {
+                const libraryItem = document.createElement('a');
+                libraryItem.classList.add('list-group-item', 'list-group-item-action');
+                libraryItem.href = '#';
+                libraryItem.innerHTML = `<strong>${library.name}</strong>
+                                         <span class="float-right text-muted">${library.location}</span>`;
+                librariesList.appendChild(libraryItem);
+            });
+        } else {
+            const noLibrariesMessage = document.createElement('p');
+            noLibrariesMessage.classList.add('text-center', 'text-muted');
+            noLibrariesMessage.textContent = 'No libraries available at the moment.';
+            librariesList.appendChild(noLibrariesMessage);
+        }
+    } catch (error) {
+        console.error('Error fetching libraries:', error);
+        document.getElementById('loading-message').textContent = 'Error loading libraries.';
+    }
+}
+
+// Retrieve the access token from localStorage or sessionStorage
+const accessToken = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
+
+// Check if the token exists
+if (!accessToken) {
+    console.error('No access token found. Please log in.');
+    document.getElementById('loading-message').textContent = 'No access token found. Please log in.';
+} else {
+    // Proceed with the API call if the token is found
+    fetchLibraries(accessToken);
+}
+</script>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- templates/library_list.html -->
+<!-- {% extends 'library/base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row mt-4">
+        <div class="col">
+            <h2 class="text-center mb-4">List of Libraries</h2>
+
             {% if libraries %}
                 <div class="list-group">
                     {% for library in libraries %}
@@ -24,8 +134,8 @@
     </div>
 </div>
 {% endblock %}
-
-
+ 
+ -->
 
 
 
