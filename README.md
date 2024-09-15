@@ -1,340 +1,290 @@
-# Library Seat Management System API
+# Library Seat Management System
 
-This API provides endpoints to manage libraries, seats, and user authentication in the Library Seat Management System. The system is built using Django and Django REST Framework, and it uses JWT (JSON Web Token) for authentication.
 
-## Table of Contents
+### 1. **Student Signup API** (`POST /studentsignup/`)
+This API registers a new student.
 
-- [Authentication](#authentication)
-  - [Obtain Token](#obtain-token)
-  - [Refresh Token](#refresh-token)
-- [Libraries](#libraries)
-  - [List Libraries](#list-libraries)
-  - [Create Library](#create-library)
-  - [Retrieve Library Details](#retrieve-library-details)
-  - [Update Library](#update-library)
-  - [Delete Library](#delete-library)
-- [Seats](#seats)
-  - [List Seats](#list-seats)
-  - [Create Seat](#create-seat)
-  - [Retrieve Seat Details](#retrieve-seat-details)
-  - [Update Seat](#update-seat)
-  - [Delete Seat](#delete-seat)
-
-## Authentication
-
-### Obtain Token
-
-Use this endpoint to obtain an access and refresh token by providing your username and password.
-
-- **Endpoint**: `/api/token/`
-- **Method**: `POST`
-- **Request Body**:
-
+- **Method:** `POST`
+- **URL:** `http://127.0.0.1:8001/studentsignup/`
+- **Headers:**
+  - `Content-Type: application/json`
+- **Body: (raw JSON)**
   ```json
   {
-    "username": "your_username",
-    "password": "your_password"
+      "username": "john_doe",
+      "password": "password123",
+      "email": "john.doe@example.com",
+      "school": "Sample School",
+      "class": "10th Grade",
+      "date_of_birth": "2005-09-15",
+      "contact_number": "1234567890"
+  }
+  ```
+- **Response Example (201 Created):**
+  ```json
+  {
+      "message": "Student registered successfully"
   }
   ```
 
-- **Response**:
+---
 
+### 2. **Student Profile API** (`GET /profileview/`)
+This API fetches the profile of the authenticated user.
+
+- **Method:** `GET`
+- **URL:** `http://127.0.0.1:8001/profileview/`
+- **Headers:**
+  - `Authorization: Bearer <JWT_TOKEN>`
+- **Response Example (200 OK):**
   ```json
   {
-    "refresh": "your_refresh_token",
-    "access": "your_access_token"
+      "user": {
+          "username": "john_doe",
+          "email": "john.doe@example.com"
+      },
+      "role": "student"
   }
   ```
 
-### Refresh Token
+### **Update Student Profile API** (`PUT /profileview/`)
+This API updates the student profile.
 
-Use this endpoint to obtain a new access token using a refresh token.
-
-- **Endpoint**: `/api/token/refresh/`
-- **Method**: `POST`
-- **Request Body**:
-
+- **Method:** `PUT`
+- **URL:** `http://127.0.0.1:8001/profileview/`
+- **Headers:**
+  - `Authorization: Bearer <JWT_TOKEN>`
+  - `Content-Type: application/json`
+- **Body (raw JSON):**
   ```json
   {
-    "refresh": "your_refresh_token"
+      "school": "New School Name",
+      "class": "11th Grade",
+      "contact_number": "9876543210"
+  }
+  ```
+- **Response Example (200 OK):**
+  ```json
+  {
+      "message": "Profile updated successfully"
   }
   ```
 
-- **Response**:
+---
 
-  ```json
-  {
-    "access": "new_access_token"
-  }
-  ```
+### 3. **Library List API** (`GET /librarieslist/`)
+Fetches a list of all libraries.
 
-## Libraries
-
-### List Libraries
-
-Retrieve a list of all libraries.
-
-- **Endpoint**: `/library/api/libraries/`
-- **Method**: `GET`
-- **Headers**:
-
-  ```http
-  Authorization: Bearer your_access_token
-  ```
-
-- **Response**:
-
+- **Method:** `GET`
+- **URL:** `http://127.0.0.1:8001/librarieslist/`
+- **Headers:**
+  - `Authorization: Bearer <JWT_TOKEN>`
+- **Response Example (200 OK):**
   ```json
   [
-    {
+      {
+          "id": 1,
+          "name": "Central Library",
+          "location": "Main St",
+          "total_seats": 100
+      },
+      {
+          "id": 2,
+          "name": "Community Library",
+          "location": "5th Ave",
+          "total_seats": 50
+      }
+  ]
+  ```
+
+---
+
+### 4. **Seat Availability API** (`GET /librarieslist/<library_id>/seats/`)
+Gets seat availability for a specific library.
+
+- **Method:** `GET`
+- **URL:** `http://127.0.0.1:8001/librarieslist/1/seats/` (example for library ID `1`)
+- **Headers:**
+  - `Authorization: Bearer <JWT_TOKEN>`
+- **Response Example (200 OK):**
+  ```json
+  {
+      "library": "Central Library",
+      "seats": [
+          {
+              "id": 1,
+              "seat_number": "A1",
+              "is_available": true
+          },
+          {
+              "id": 2,
+              "seat_number": "A2",
+              "is_available": false
+          }
+      ]
+  }
+  ```
+
+---
+
+### 5. **Approve Student API** (`POST /studentsapproval/<student_id>/approve/`)
+Approves a student if their payment is confirmed.
+
+- **Method:** `POST`
+- **URL:** `http://127.0.0.1:8001/studentsapproval/1/approve/` (example for student ID `1`)
+- **Headers:**
+  - `Authorization: Bearer <JWT_TOKEN>`
+- **Response Example (200 OK):**
+  ```json
+  {
+      "message": "Student approved successfully"
+  }
+  ```
+- **Response Example (400 Bad Request):**
+  ```json
+  {
+      "error": "Payment not confirmed"
+  }
+  ```
+
+---
+
+### 6. **Create Library API** (`POST /libraries/create/`)
+Creates a new library (for admin users).
+
+- **Method:** `POST`
+- **URL:** `http://127.0.0.1:8001/libraries/create/`
+- **Headers:**
+  - `Authorization: Bearer <JWT_TOKEN>`
+  - `Content-Type: application/json`
+- **Body (raw JSON):**
+  ```json
+  {
+      "name": "New Library",
+      "location": "Sample St",
+      "total_seats": 40
+  }
+  ```
+- **Response Example (201 Created):**
+  ```json
+  {
+      "id": 3,
+      "name": "New Library",
+      "location": "Sample St",
+      "total_seats": 40
+  }
+  ```
+
+---
+
+### 7. **Retrieve Library API** (`GET /libraries/<library_id>/`)
+Retrieves a specific library by ID.
+
+- **Method:** `GET`
+- **URL:** `http://127.0.0.1:8001/libraries/1/` (example for library ID `1`)
+- **Headers:**
+  - `Authorization: Bearer <JWT_TOKEN>`
+- **Response Example (200 OK):**
+  ```json
+  {
       "id": 1,
       "name": "Central Library",
-      "location": "Main Campus",
-      "total_seats": 100,
-      "available_seats": 25
-    },
-    
-  ]
-  ```
-
-### Create Library
-
-Create a new library. Only super admins are allowed to create libraries.
-
-- **Endpoint**: `/library/api/libraries/`
-- **Method**: `POST`
-- **Headers**:
-
-  ```http
-  Authorization: Bearer your_access_token
-  ```
-
-- **Request Body**:
-
-  ```json
-  {
-    "name": "New Library",
-    "location": "South Campus",
-    "total_seats": 50
+      "location": "Main St",
+      "total_seats": 100
   }
   ```
 
-- **Response**:
+---
 
+### 8. **Update Library API** (`PUT /libraries/update/<library_id>/`)
+Updates an existing library (for admin users).
+
+- **Method:** `PUT`
+- **URL:** `http://127.0.0.1:8001/libraries/update/1/` (example for library ID `1`)
+- **Headers:**
+  - `Authorization: Bearer <JWT_TOKEN>`
+  - `Content-Type: application/json`
+- **Body (raw JSON):**
   ```json
   {
-    "id": 2,
-    "name": "New Library",
-    "location": "South Campus",
-    "total_seats": 50,
-    "available_seats": 50
+      "name": "Updated Library Name",
+      "location": "Updated Location"
+  }
+  ```
+- **Response Example (200 OK):**
+  ```json
+  {
+      "id": 1,
+      "name": "Updated Library Name",
+      "location": "Updated Location",
+      "total_seats": 100
   }
   ```
 
-### Retrieve Library Details
+---
 
-Retrieve details of a specific library by its ID.
+### 9. **Delete Library API** (`DELETE /libraries/delete/<library_id>/`)
+Deletes a specific library (for admin users).
 
-- **Endpoint**: `/library/api/libraries/{id}/`
-- **Method**: `GET`
-- **Headers**:
-
-  ```http
-  Authorization: Bearer your_access_token
-  ```
-
-- **Response**:
-
+- **Method:** `DELETE`
+- **URL:** `http://127.0.0.1:8001/libraries/delete/1/` (example for library ID `1`)
+- **Headers:**
+  - `Authorization: Bearer <JWT_TOKEN>`
+- **Response Example (204 No Content):**
   ```json
   {
-    "id": 1,
-    "name": "Central Library",
-    "location": "Main Campus",
-    "total_seats": 100,
-    "available_seats": 25
+      "message": "Library deleted successfully"
   }
   ```
 
-### Update Library
+---
 
-Update details of a specific library. Only super admins can update library details.
+### 10. **List All Libraries API** (`GET /libraries/all/`)
+Fetches a list of all libraries (same as LibraryListAPI).
 
-- **Endpoint**: `/library/api/libraries/{id}/`
-- **Method**: `PUT`
-- **Headers**:
-
-  ```http
-  Authorization: Bearer your_access_token
-  ```
-
-- **Request Body**:
-
-  ```json
-  {
-    "name": "Updated Library",
-    "location": "North Campus",
-    "total_seats": 150
-  }
-  ```
-
-- **Response**:
-
-  ```json
-  {
-    "id": 1,
-    "name": "Updated Library",
-    "location": "North Campus",
-    "total_seats": 150,
-    "available_seats": 150
-  }
-  ```
-
-### Delete Library
-
-Delete a specific library. Only super admins can delete a library.
-
-- **Endpoint**: `/library/api/libraries/{id}/`
-- **Method**: `DELETE`
-- **Headers**:
-
-  ```http
-  Authorization: Bearer your_access_token
-  ```
-
-- **Response**:
-
-  ```json
-  {
-    "detail": "Library deleted successfully."
-  }
-  ```
-
-## Seats
-
-### List Seats
-
-Retrieve a list of all seats in a specific library.
-
-- **Endpoint**: `/library/api/libraries/{library_id}/seats/`
-- **Method**: `GET`
-- **Headers**:
-
-  ```http
-  Authorization: Bearer your_access_token
-  ```
-
-- **Response**:
-
+- **Method:** `GET`
+- **URL:** `http://127.0.0.1:8001/libraries/all/`
+- **Headers:**
+  - `Authorization: Bearer <JWT_TOKEN>`
+- **Response Example (200 OK):**
   ```json
   [
-    {
-      "id": 1,
-      "number": "A-01",
-      "is_booked": false
-    },
-    
+      {
+          "id": 1,
+          "name": "Central Library",
+          "location": "Main St",
+          "total_seats": 100
+      },
+      {
+          "id": 2,
+          "name": "Community Library",
+          "location": "5th Ave",
+          "total_seats": 50
+      }
   ]
   ```
 
-### Create Seat
+---
 
-Create a new seat in a specific library. Only admins of that library or super admins can create seats.
+### JWT Authentication
 
-- **Endpoint**: `/library/api/libraries/{library_id}/seats/`
-- **Method**: `POST`
-- **Headers**:
+Before testing the protected APIs (e.g., fetching student profiles, libraries, etc.), you need to generate a valid JWT token:
 
-  ```http
-  Authorization: Bearer your_access_token
-  ```
-
-- **Request Body**:
-
+- **Method:** `POST`
+- **URL:** `http://127.0.0.1:8001/api/token/`
+- **Body: (raw JSON)**
   ```json
   {
-    "number": "B-02"
+      "username": "john_doe",
+      "password": "password123"
+  }
+  ```
+- **Response Example:**
+  ```json
+  {
+      "refresh": "<REFRESH_TOKEN>",
+      "access": "<ACCESS_TOKEN>"
   }
   ```
 
-- **Response**:
-
-  ```json
-  {
-    "id": 2,
-    "number": "B-02",
-    "is_booked": false
-  }
-  ```
-
-### Retrieve Seat Details
-
-Retrieve details of a specific seat by its ID.
-
-- **Endpoint**: `/library/api/libraries/{library_id}/seats/{id}/`
-- **Method**: `GET`
-- **Headers**:
-
-  ```http
-  Authorization: Bearer your_access_token
-  ```
-
-- **Response**:
-
-  ```json
-  {
-    "id": 1,
-    "number": "A-01",
-    "is_booked": false
-  }
-  ```
-
-### Update Seat
-
-Update details of a specific seat. Only admins of that library or super admins can update seat details.
-
-- **Endpoint**: `/library/api/libraries/{library_id}/seats/{id}/`
-- **Method**: `PUT`
-- **Headers**:
-
-  ```http
-  Authorization: Bearer your_access_token
-  ```
-
-- **Request Body**:
-
-  ```json
-  {
-    "number": "A-01",
-    "is_booked": true
-  }
-  ```
-
-- **Response**:
-
-  ```json
-  {
-    "id": 1,
-    "number": "A-01",
-    "is_booked": true
-  }
-  ```
-
-### Delete Seat
-
-Delete a specific seat. Only admins of that library or super admins can delete a seat.
-
-- **Endpoint**: `/library/api/libraries/{library_id}/seats/{id}/`
-- **Method**: `DELETE`
-- **Headers**:
-
-  ```http
-  Authorization: Bearer your_access_token
-  ```
-
-- **Response**:
-
-  ```json
-  {
-    "detail": "Seat deleted successfully."
-  }
-  ```
+Use the `access` token in the `Authorization` header (`Authorization: Bearer <ACCESS_TOKEN>`) for subsequent authenticated API requests.
