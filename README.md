@@ -287,4 +287,3 @@ Before testing the protected APIs (e.g., fetching student profiles, libraries, e
   }
   ```
 
-Use the `access` token in the `Authorization` header (`Authorization: Bearer <ACCESS_TOKEN>`) for subsequent authenticated API requests.
