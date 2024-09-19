@@ -8,15 +8,51 @@ from .serializers import StudentSignupSerializer, UserProfileSerializer, Library
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
+from geopy.distance import geodesic
+
+def calculate_distance(user_location, library_location):
+    return geodesic(user_location, library_location).km
+
+# class StudentSignupAPI(APIView):
+#     def post(self, request):
+#         serializer = StudentSignupSerializer(data=request.data)
+#         if serializer.is_valid():
+#             user = serializer.save()
+#             UserProfile.objects.create(user=user, role='student')
+#             return Response({'message': 'Student registered successfully'}, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 class StudentSignupAPI(APIView):
     def post(self, request):
         serializer = StudentSignupSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
+            # Automatically create user profile for student
             UserProfile.objects.create(user=user, role='student')
             return Response({'message': 'Student registered successfully'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+# class StudentProfileAPI(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request):
+#         profile = get_object_or_404(UserProfile, user=request.user)
+#         serializer = UserProfileSerializer(profile)
+#         return Response(serializer.data)
+
+#     def put(self, request):
+#         profile = get_object_or_404(UserProfile, user=request.user)
+#         serializer = UserProfileSerializer(profile, data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response({'message': 'Profile updated successfully'})
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 class StudentProfileAPI(APIView):
     permission_classes = [IsAuthenticated]
@@ -34,15 +70,47 @@ class StudentProfileAPI(APIView):
             return Response({'message': 'Profile updated successfully'})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+# class LibraryListAPI(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request):
+#         # print(f"Authorization Header: {request.headers.get('Authorization')}")
+#         libraries = Library.objects.all()
+#         serializer = LibrarySerializer(libraries, many=True)
+#         permission_classes = [IsAuthenticated]
+#         return Response(serializer.data)
+
+
+
 class LibraryListAPI(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = []  # Allow unauthenticated users to access this API
 
     def get(self, request):
-        # print(f"Authorization Header: {request.headers.get('Authorization')}")
+        user_lat = request.query_params.get('lat')
+        user_lon = request.query_params.get('lon')
+
+        if not user_lat or not user_lon:
+            return Response({"error": "Please provide latitude and longitude."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user_location = (float(user_lat), float(user_lon))
         libraries = Library.objects.all()
-        serializer = LibrarySerializer(libraries, many=True)
-        permission_classes = [IsAuthenticated]
-        return Response(serializer.data)
+
+        result = []
+        for library in libraries:
+            library_location = (library.latitude, library.longitude)  # Assuming Library model has latitude & longitude
+            distance = calculate_distance(user_location, library_location)
+            result.append({
+                "name": library.name,
+                "address": library.address,  # Assuming you have address field
+                "owner": library.owner.username,  # Assuming owner is a foreign key to User
+                "distance_km": distance,
+                "available_seats": library.seats.filter(is_booked=False).count(),
+                "total_seats": library.seats.count()
+            })
+
+        return Response(result)
+
 
 
 
