@@ -122,6 +122,8 @@ class SeatAvailabilityAPI(APIView):
         seats = library.seats.all()
         serializer = SeatSerializer(seats, many=True)
         return Response({'library': library.name, 'seats': serializer.data})
+    
+
 
 class ApproveStudentAPI(APIView):
     permission_classes = [IsAdminUser]
@@ -135,14 +137,35 @@ class ApproveStudentAPI(APIView):
             return Response({'message': 'Student approved successfully'})
         else:
             return Response({'error': 'Payment not confirmed'}, status=status.HTTP_400_BAD_REQUEST)
+        
+
+
 
 
 # ======================================================================================
+
+# class CreateLibraryAPI(APIView):
+#     permission_classes = [IsAdminUser]
+
+#     def post(self, request):
+#         serializer = LibrarySerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class CreateLibraryAPI(APIView):
     permission_classes = [IsAdminUser]
 
     def post(self, request):
+        data = request.data
+        latitude = data.get('latitude')
+        longitude = data.get('longitude')
+
+        if not latitude or not longitude:
+            return Response({'error': 'Latitude and longitude are required'}, status=status.HTTP_400_BAD_REQUEST)
+
         serializer = LibrarySerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
