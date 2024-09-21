@@ -316,6 +316,7 @@ class ApproveUserAPI(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, user_id, *args, **kwargs):
+        print("Request received to approve user:", user_id)
         # Check if the requesting user is a superadmin
         requesting_user_profile = get_object_or_404(UserProfile, user=request.user)
         if requesting_user_profile.role != 'superadmin':
