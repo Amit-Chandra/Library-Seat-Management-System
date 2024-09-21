@@ -133,6 +133,98 @@ Here are the sample requests for each API endpoint, including POST and PUT reque
 }
 ```
 
+
+---
+
+**1. StudentProfileAPI (GET & POST)**
+
+- **GET request** to retrieve all student profiles:
+
+  - **URL**: `http://127.0.0.1:8000/api/student-profiles/`
+  - **Method**: GET
+  - **Headers**: 
+    - `Authorization: Bearer <your_token>`
+
+- **POST request** to create a student profile:
+
+  - **URL**: `http://127.0.0.1:8000/api/student-profiles/`
+  - **Method**: POST
+  - **Headers**: 
+    - `Authorization: Bearer <your_token>`
+    - `Content-Type: application/json`
+  - **Body**:
+    ```json
+    {
+      "school": "ABC School",
+      "class": "12th Grade",
+      "date_of_birth": "2005-05-10",
+      "contact_number": "+1234567890",
+      "library": 1
+    }
+    ```
+
+---
+
+**2. ApproveStudentAPI (POST)**
+
+- **POST request** to approve a student registration:
+
+  - **URL**: `http://127.0.0.1:8000/api/approve-student/<student_id>/`
+  - **Method**: POST
+  - **Headers**: 
+    - `Authorization: Bearer <your_token>`
+  - **Response**:
+    ```json
+    {
+      "status": "Student approved"
+    }
+    ```
+
+---
+
+**3. RetrieveLibraryAPI (GET)**
+
+- **GET request** to retrieve a specific library by its ID:
+
+  - **URL**: `http://127.0.0.1:8000/api/library/<library_id>/`
+  - **Method**: GET
+  - **Headers**: 
+    - `Authorization: Bearer <your_token>`
+  - **Response** (example):
+    ```json
+    {
+      "id": 1,
+      "name": "Central Library",
+      "address": "123 Main Street",
+      "owner": {
+        "id": 2,
+        "username": "admin"
+      }
+    }
+    ```
+
+---
+
+**4. DeleteLibraryAPI (DELETE)**
+
+- **DELETE request** to delete a library by its ID:
+
+  - **URL**: `http://127.0.0.1:8000/api/library/<library_id>/`
+  - **Method**: DELETE
+  - **Headers**: 
+    - `Authorization: Bearer <your_token>`
+  - **Response**:
+    ```json
+    {
+      "status": "Library deleted"
+    }
+    ```
+
+---
+
+Ensure you have JWT or session-based authentication enabled. You can replace `<your_token>` with the actual token you receive when a user logs in.
+
+
 With these API endpoints and sample requests, you can now test the functionality using Postman for creating, updating libraries, managing student profiles, and checking seat availability based on geo-location.
 
 
