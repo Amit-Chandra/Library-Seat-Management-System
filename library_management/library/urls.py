@@ -2,11 +2,13 @@ from django.urls import path
 from django.contrib import admin
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .api_views import (
+    ApproveUserAPI,
     StudentSignupAPI,
-    StudentProfileAPI,
+    # StudentProfileAPI,
     LibraryListAPI,
     SeatAvailabilityAPI,
-    ApproveStudentAPI,
+    UserProfileAPI,
+    # ApproveStudentAPI,
     CreateLibraryAPI,
     RetrieveLibraryAPI,
     UpdateLibraryAPI,
@@ -24,9 +26,8 @@ urlpatterns = [
     # Student Signup
     path('student-signup/', StudentSignupAPI.as_view(), name='student-signup'),
 
-    # Student Profile
-    path('profileview/', StudentProfileAPI.as_view(), name='student_profile_api'),
-    path('update-student-profile/<int:user_id>/', UpdateStudentProfileAPI.as_view(), name='update-student-profile'),
+    path('user-profiles/', UserProfileAPI.as_view(), name='user-profile-list'),  # List and create user profiles
+    path('user-profiles/approve/<int:user_id>/', ApproveUserAPI.as_view(), name='approve-user'), 
 
     # Library List (Public Access)
     path('library-list/', LibraryListAPI.as_view(), name='library-list'),
@@ -34,12 +35,11 @@ urlpatterns = [
     # Seat Availability
     path('seat-availability/<int:library_id>/', SeatAvailabilityAPI.as_view(), name='seat-availability'),
 
-    # Approve a student
-    path('studentsapproval/<int:student_id>/approve/', ApproveStudentAPI.as_view(), name='approve_student_api'),
+    path('library/<int:library_id>/', RetrieveLibraryAPI.as_view(), name='retrieve-library'),  # Retrieve a single library
 
     # Library CRUD Operations (Admin Only)
     path('create-library/', CreateLibraryAPI.as_view(), name='create-library'),
-    path('retrieve-library/<int:library_id>/', RetrieveLibraryAPI.as_view(), name='retrieve-library'),
+    # path('retrieve-library/<int:library_id>/', RetrieveLibraryAPI.as_view(), name='retrieve-library'),
     path('update-library/<int:library_id>/', UpdateLibraryAPI.as_view(), name='update-library'),
     path('delete-library/<int:library_id>/', DeleteLibraryAPI.as_view(), name='delete-library'),
 ]

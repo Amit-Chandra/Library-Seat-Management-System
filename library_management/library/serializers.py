@@ -19,15 +19,15 @@ class StudentSignupSerializer(serializers.ModelSerializer):
         return user
 
 
-class UserProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UserProfile
-        fields = ['user', 'role', 'approved']  # Add other fields as necessary
+# class UserProfileSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = UserProfile
+#         fields = ['user', 'role', 'approved']  # Add other fields as necessary
 
-class LibrarySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Library
-        fields = ['id', 'name', 'location']
+# class LibrarySerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Library
+#         fields = ['id', 'name', 'location']
 
 
 class SeatSerializer(serializers.ModelSerializer):
@@ -56,3 +56,16 @@ class LibrarySerializer(serializers.ModelSerializer):
         # instance.available_seats = validated_data.get('available_seats', instance.available_seats)
         instance.save()
         return instance
+    
+from rest_framework import serializers
+from .models import Library, UserProfile
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = '__all__'  # Adjust fields as needed
+
+class LibrarySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Library
+        fields = '__all__'  # Adjust fields as needed

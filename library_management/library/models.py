@@ -3,20 +3,32 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 
 # ========================= Library Model with Latitude and Longitude ============================
+# class Library(models.Model):
+#     name = models.CharField(max_length=100)
+#     location = models.CharField(max_length=255)
+#     total_seats = models.PositiveIntegerField()
+#     address = models.CharField(max_length=255, blank=True)
+#     # owner = models.ForeignKey(User, on_delete=models.CASCADE) 
+#     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+
+#     # Add latitude and longitude fields to store geo-location
+#     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+#     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+
+#     def __str__(self):
+#         return self.name
+
 class Library(models.Model):
     name = models.CharField(max_length=100)
-    location = models.CharField(max_length=255)
+    location = models.CharField(max_length=255)  # Keeps location information
     total_seats = models.PositiveIntegerField()
-    address = models.CharField(max_length=255, blank=True)
-    # owner = models.ForeignKey(User, on_delete=models.CASCADE) 
     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-
-    # Add latitude and longitude fields to store geo-location
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
 
     def __str__(self):
         return self.name
+
 
 # ========================= Seat Model ============================
 class Seat(models.Model):
