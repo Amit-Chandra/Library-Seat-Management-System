@@ -1,6 +1,154 @@
 # Library Seat Management System
 
 
+
+
+### Sample Requests for Postman
+
+Here are the sample requests for each API endpoint, including POST and PUT requests.
+
+#### 1. **Create Library API (POST)**
+
+- **URL**: `POST /create-library/`
+- **Request Body** (JSON):
+```json
+{
+  "name": "Central Library",
+  "location": "Main Street, City Center",
+  "total_seats": 100,
+  "latitude": 28.613939,
+  "longitude": 77.209023
+}
+```
+- **Response**:
+```json
+{
+  "message": "Library created successfully"
+}
+```
+
+#### 2. **Update Library API (PUT)**
+
+- **URL**: `PUT /update-library/{library_id}/`
+- **Request Body** (JSON):
+```json
+{
+  "name": "Updated Library Name",
+  "location": "Updated Location",
+  "total_seats": 120,
+  "latitude": 28.613939,
+  "longitude": 77.209023
+}
+```
+- **Response**:
+```json
+{
+  "message": "Library updated successfully"
+}
+```
+
+#### 3. **Student Signup API (POST)**
+
+- **URL**: `POST /student-signup/`
+- **Request Body** (JSON):
+```json
+{
+  "username": "student1",
+  "email": "student1@example.com",
+  "password": "password123",
+  "dob": "2000-01-01",
+  "contact_number": "1234567890",
+  "hobbies": "Reading, Coding",
+  "latitude": 28.613939,
+  "longitude": 77.209023
+}
+```
+- **Response**:
+```json
+{
+  "message": "Student registered successfully"
+}
+```
+
+#### 4. **Update Student Profile API (PUT)**
+
+- **URL**: `PUT /update-student-profile/{user_id}/`
+- **Request Body** (JSON):
+```json
+{
+  "dob": "2000-01-15",
+  "contact_number": "9876543210",
+  "hobbies": "Music, Art",
+  "latitude": 28.704060,
+  "longitude": 77.102493
+}
+```
+- **Response**:
+```json
+{
+  "message": "Profile updated successfully"
+}
+```
+
+### 5. **Library List API (GET)**
+
+- **URL**: `GET /library-list/?lat=28.613939&lng=77.209023`
+- **Response**:
+```json
+[
+  {
+    "name": "Central Library",
+    "address": "Main Street, City Center",
+    "distance": "2.15 km",
+    "owner": "admin1",
+    "seat_availability": 50
+  },
+  {
+    "name": "North Library",
+    "address": "North Avenue",
+    "distance": "5.40 km",
+    "owner": "admin2",
+    "seat_availability": 30
+  }
+]
+```
+
+#### 6. **Seat Availability API (GET)**
+
+- **URL**: `GET /seat-availability/{library_id}/`
+- **Response**:
+```json
+{
+  "library_name": "Central Library",
+  "available_seats": [
+    {
+      "seat_number": 1,
+      "is_occupied": false
+    },
+    {
+      "seat_number": 2,
+      "is_occupied": true
+    }
+  ]
+}
+```
+
+With these API endpoints and sample requests, you can now test the functionality using Postman for creating, updating libraries, managing student profiles, and checking seat availability based on geo-location.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ### 1. **Student Signup API** (`POST /studentsignup/`)
 This API registers a new student.
 
