@@ -85,6 +85,40 @@ class CreateLibraryAPI(APIView):
 
 
 
+# ========================= Update Library API ============================
+class UpdateLibraryAPI(APIView):
+    permission_classes = [IsAdminUser]
+    
+    def put(self, request, library_id):
+        library = get_object_or_404(Library, id=library_id)
+        serializer = LibrarySerializer(library, data=request.data, partial=True)
+        
+        if serializer.is_valid():
+            updated_library = serializer.save()
+            # Update latitude and longitude if provided
+            updated_library.latitude = request.data.get('latitude', updated_library.latitude)
+            updated_library.longitude = request.data.get('longitude', updated_library.longitude)
+            updated_library.save()
+            return Response({'message': 'Library updated successfully'}, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# ========================= Update Student Profile API ============================
+class UpdateStudentProfileAPI(APIView):
+    def put(self, request, user_id):
+        user_profile = get_object_or_404(UserProfile, user__id=user_id)
+        serializer = UserProfileSerializer(user_profile, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            updated_profile = serializer.save()
+            # Update latitude and longitude if provided
+            updated_profile.latitude = request.data.get('latitude', updated_profile.latitude)
+            updated_profile.longitude = request.data.get('longitude', updated_profile.longitude)
+            updated_profile.save()
+            return Response({'message': 'Profile updated successfully'}, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 
