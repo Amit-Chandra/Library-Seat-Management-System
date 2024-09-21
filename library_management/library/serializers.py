@@ -2,21 +2,21 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import Library, Seat, UserProfile
 
-class StudentSignupSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
+# class StudentSignupSerializer(serializers.ModelSerializer):
+#     password = serializers.CharField(write_only=True)
 
-    class Meta:
-        model = User
-        fields = ['username', 'email', 'password']
+#     class Meta:
+#         model = User
+#         fields = ['username', 'email', 'password']
 
-    def create(self, validated_data):
-        user = User(
-            username=validated_data['username'],
-            email=validated_data['email']
-        )
-        user.set_password(validated_data['password'])
-        user.save()
-        return user
+#     def create(self, validated_data):
+#         user = User(
+#             username=validated_data['username'],
+#             email=validated_data['email']
+#         )
+#         user.set_password(validated_data['password'])
+#         user.save()
+#         return user
 
 
 # class UserProfileSerializer(serializers.ModelSerializer):
@@ -57,8 +57,7 @@ class LibrarySerializer(serializers.ModelSerializer):
         instance.save()
         return instance
     
-from rest_framework import serializers
-from .models import Library, UserProfile
+
 
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
@@ -69,3 +68,28 @@ class LibrarySerializer(serializers.ModelSerializer):
     class Meta:
         model = Library
         fields = '__all__'  # Adjust fields as needed
+
+
+
+
+class UserSignupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'password']
+
+    def create(self, validated_data):
+        user = User(
+            username=validated_data['username'],
+            email=validated_data['email']
+        )
+        user.set_password(validated_data['password'])
+        user.save()
+        return user
+
+
+class ApproveUserSerializer(serializers.ModelSerializer):
+    role = serializers.ChoiceField(choices=['admin', 'student'], required=True)
+
+    class Meta:
+        model = UserProfile
+        fields = ['role']

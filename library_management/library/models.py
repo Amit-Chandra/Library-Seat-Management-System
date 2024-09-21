@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 
+
 # ========================= Library Model with Latitude and Longitude ============================
 # class Library(models.Model):
 #     name = models.CharField(max_length=100)
@@ -47,7 +48,7 @@ class UserProfile(models.Model):
     dob = models.DateField(null=True, blank=True)
     hobbies = models.TextField(blank=True)
     contact_number = models.CharField(max_length=15, blank=True)
-    address = models.CharField(max_length=255, blank=True)
+    location = models.CharField(max_length=255, blank=True)
 
     # Add latitude and longitude to store user's geo-location
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
@@ -67,7 +68,6 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"Payment of {self.amount} by {self.student.username}"
-
 
 
 

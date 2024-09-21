@@ -3,12 +3,10 @@ from django.contrib import admin
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .api_views import (
     ApproveUserAPI,
-    StudentSignupAPI,
-    # StudentProfileAPI,
+    SignupAPI,
     LibraryListAPI,
     SeatAvailabilityAPI,
     UserProfileAPI,
-    # ApproveStudentAPI,
     CreateLibraryAPI,
     RetrieveLibraryAPI,
     UpdateLibraryAPI,
@@ -24,10 +22,11 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
     # Student Signup
-    path('student-signup/', StudentSignupAPI.as_view(), name='student-signup'),
+    path('user-signup/', SignupAPI.as_view(), name='user-signup'),
 
     path('user-profiles/', UserProfileAPI.as_view(), name='user-profile-list'),  # List and create user profiles
     path('user-profiles/approve/<int:user_id>/', ApproveUserAPI.as_view(), name='approve-user'), 
+    
 
     # Library List (Public Access)
     path('library-list/', LibraryListAPI.as_view(), name='library-list'),

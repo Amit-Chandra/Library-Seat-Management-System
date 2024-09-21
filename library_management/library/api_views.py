@@ -6,7 +6,7 @@ from geopy.distance import geodesic
 
 from library.regular_views import library_list  # For calculating distance between two geo-locations
 from .models import Library, Seat, UserProfile, Payment
-from .serializers import StudentSignupSerializer, UserProfileSerializer, LibrarySerializer, SeatSerializer
+from .serializers import ApproveUserSerializer, UserProfileSerializer, LibrarySerializer, SeatSerializer
 from rest_framework.permissions import IsAdminUser
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import status
@@ -19,20 +19,52 @@ from .serializers import LibrarySerializer, UserProfileSerializer
 from rest_framework.generics import RetrieveAPIView, DestroyAPIView
 from django.shortcuts import get_object_or_404
 
+
+from django.contrib.auth.models import User
+from rest_framework import generics
+from rest_framework.response import Response
+from rest_framework import status
+from .models import UserProfile
+from .serializers import UserSignupSerializer
+
 # ========================= Helper Function ============================
 def calculate_distance(user_location, library_location):
     return geodesic(user_location, library_location).km  # Returns distance in kilometers
 
 # ========================= Student Signup API ============================
-class StudentSignupAPI(APIView):
-    def post(self, request):
-        serializer = StudentSignupSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            # Create user profile
-            UserProfile.objects.create(user=user, role='student')
-            return Response({'message': 'Student registered successfully'}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+# class StudentSignupAPI(APIView):
+#     def post(self, request):
+#         serializer = StudentSignupSerializer(data=request.data)
+#         if serializer.is_valid():
+#             user = serializer.save()
+#             # Create user profile
+#             UserProfile.objects.create(user=user, role='student')
+#             return Response({'message': 'Student registered successfully'}, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+class SignupAPI(generics.CreateAPIView):
+    serializer_class = UserSignupSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+
+        # Create UserProfile for the new user
+        UserProfile.objects.create(
+            user=user,
+            dob=request.data.get('dob'),
+            hobbies=request.data.get('hobbies'),
+            contact_number=request.data.get('contact_number'),
+            latitude=request.data.get('latitude'),
+            longitude=request.data.get('longitude')
+        )
+        
+        return Response({"message": "Student registered successfully"}, status=status.HTTP_201_CREATED)
+
 
 # ========================= Library List API with Geo-location ============================
 # class LibraryListAPI(APIView):
@@ -100,7 +132,7 @@ class LibraryListAPI(APIView):
             for library in libraries:
                 library_data.append({
                     'name': library.name,
-                    'address': library.address,
+                    'location': library.location,
                     'owner': library.owner.username if library.owner else "No Owner",
                     'seat_availability': library.seats.filter(is_occupied=False).count()
                 })
@@ -202,17 +234,114 @@ class UserProfileAPI(APIView):
 
 
 # ApproveUserAPI for admins to approve user registration
+# class ApproveUserAPI(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request, user_id, *args, **kwargs):
+#         try:
+#             user_profile = get_object_or_404(UserProfile, id=user_id)
+#             user_profile.approved = True
+#             user_profile.save()
+#             return Response({'status': 'User approved'}, status=status.HTTP_200_OK)
+#         except UserProfile.DoesNotExist:
+#             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+
+# ApproveUserAPI for admins to approve user registration
+# class ApproveUserAPI(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request, user_id, *args, **kwargs):
+#         # Check if the user is a superadmin or admin
+#         if not (request.user.is_superuser or request.user.is_staff):
+#             return Response({'error': 'You do not have permission to approve users.'}, status=status.HTTP_403_FORBIDDEN)
+
+#         user_profile = get_object_or_404(UserProfile, id=user_id)
+#         user_profile.approved = True
+#         user_profile.save()
+#         return Response({'status': 'User approved'}, status=status.HTTP_200_OK)
+
+
+
+
+# class ApproveUserAPI(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request, user_id, *args, **kwargs):
+#         # Check if the user making the request is a superadmin
+#         if not request.user.is_superadmin:  # Adjust this check according to your user model
+#             return Response({'error': 'Permission denied. Only superadmin can approve users.'},
+#                             status=status.HTTP_403_FORBIDDEN)
+
+#         user_profile = get_object_or_404(UserProfile, id=user_id)
+
+#         # Validate and update the role
+#         serializer = ApproveUserSerializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+        
+#         user_profile.approved = True
+#         user_profile.role = serializer.validated_data['role']
+#         user_profile.save()
+
+#         return Response({'status': 'User approved', 'role': user_profile.role}, status=status.HTTP_200_OK)
+
+
+
+# class ApproveUserAPI(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request, user_id, *args, **kwargs):
+#         # Get the user profile for the requesting user
+#         user_profile = get_object_or_404(UserProfile, user=request.user)
+
+#         # Check if the user is a superadmin
+#         if not user_profile.is_superadmin:
+#             return Response({'error': 'Permission denied. Only superadmin can approve users.'},
+#                             status=status.HTTP_403_FORBIDDEN)
+
+#         user_profile_to_approve = get_object_or_404(UserProfile, id=user_id)
+
+#         # Validate and update the role
+#         serializer = ApproveUserSerializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+
+#         user_profile_to_approve.approved = True
+#         user_profile_to_approve.role = serializer.validated_data['role']
+#         user_profile_to_approve.save()
+
+#         return Response({'status': 'User approved', 'role': user_profile_to_approve.role}, status=status.HTTP_200_OK)
+
 class ApproveUserAPI(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, user_id, *args, **kwargs):
+        # Check if the requesting user is a superadmin
+        requesting_user_profile = get_object_or_404(UserProfile, user=request.user)
+        if requesting_user_profile.role != 'superadmin':
+            return Response({'error': 'Permission denied. Only superadmin can approve users.'},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        print(f"Trying to approve UserProfile with ID: {user_id}")
+
+        # Attempt to get the user profile to approve
         try:
-            user_profile = get_object_or_404(UserProfile, id=user_id)
-            user_profile.approved = True
-            user_profile.save()
-            return Response({'status': 'User approved'}, status=status.HTTP_200_OK)
+            user_profile_to_approve = UserProfile.objects.get(id=user_id)
+            print(f"UserProfile found: {user_profile_to_approve}")
         except UserProfile.DoesNotExist:
-            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            print(f"No UserProfile found with ID: {user_id}")
+            return Response({'error': 'UserProfile not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Validate and update the role
+        serializer = ApproveUserSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user_profile_to_approve.approved = True
+        user_profile_to_approve.role = serializer.validated_data['role']
+        user_profile_to_approve.save()
+
+        return Response({'status': 'User approved', 'role': user_profile_to_approve.role}, status=status.HTTP_200_OK)
+
 
 
 # RetrieveLibraryAPI to get a single library by its ID
