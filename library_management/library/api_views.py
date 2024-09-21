@@ -2,7 +2,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-from geopy.distance import geodesic  # For calculating distance between two geo-locations
+from geopy.distance import geodesic
+
+from library.regular_views import library_list  # For calculating distance between two geo-locations
 from .models import Library, Seat, UserProfile, Payment
 from .serializers import StudentSignupSerializer, UserProfileSerializer, LibrarySerializer, SeatSerializer
 from rest_framework.permissions import IsAdminUser
@@ -24,6 +26,44 @@ class StudentSignupAPI(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # ========================= Library List API with Geo-location ============================
+# class LibraryListAPI(APIView):
+#     # Removed authentication requirement to allow public access
+#     def get(self, request):
+#         user_lat = request.query_params.get('lat')  # User's latitude
+#         user_lng = request.query_params.get('lng')  # User's longitude
+
+#         # Fetch all libraries
+#         libraries = Library.objects.all()
+#         library_data = []
+
+#         if user_lat and user_lng:
+#             user_location = (float(user_lat), float(user_lng))
+#             for library in libraries:
+#                 library_location = (library.latitude, library.longitude)
+#                 distance = calculate_distance(user_location, library_location)
+#                 library_data.append({
+#                     'name': library.name,
+#                     'address': library.address,
+#                     'distance': f"{distance:.2f} km",
+#                     'owner': library.owner.username,
+#                     'seat_availability': library.seats.count()
+#                 })
+#         else:
+#             # If no user location is provided, return all libraries without distance calculation
+#             for library in libraries:
+#                 library_data.append({
+#                     'name': library.name,
+#                     'address': library.address,
+#                     'owner': library.owner.username,
+#                     'seat_availability': library.seats.count()
+#                 })
+            
+
+#         return Response(library_data)
+
+
+
+# ========================= Library List API with Geo-location ============================
 class LibraryListAPI(APIView):
     # Removed authentication requirement to allow public access
     def get(self, request):
@@ -43,8 +83,8 @@ class LibraryListAPI(APIView):
                     'name': library.name,
                     'address': library.address,
                     'distance': f"{distance:.2f} km",
-                    'owner': library.owner.username,
-                    'seat_availability': library.seats.count()
+                    'owner': library.owner.username if library.owner else "No Owner",
+                    'seat_availability': library.seats.filter(is_occupied=False).count()
                 })
         else:
             # If no user location is provided, return all libraries without distance calculation
@@ -52,8 +92,8 @@ class LibraryListAPI(APIView):
                 library_data.append({
                     'name': library.name,
                     'address': library.address,
-                    'owner': library.owner.username,
-                    'seat_availability': library.seats.count()
+                    'owner': library.owner.username if library.owner else "No Owner",
+                    'seat_availability': library.seats.filter(is_occupied=False).count()
                 })
 
         return Response(library_data)
@@ -76,13 +116,25 @@ class CreateLibraryAPI(APIView):
     def post(self, request):
         serializer = LibrarySerializer(data=request.data)
         if serializer.is_valid():
-            library = serializer.save()
+            # library = serializer.save()
+            library = serializer.save(owner=request.user)
             library.latitude = request.data.get('latitude')
             library.longitude = request.data.get('longitude')
             library.save()
             return Response({'message': 'Library created successfully'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+# ========================= Create Library API with Geo-location ============================
+# class CreateLibraryAPI(APIView):
+#     permission_classes = [IsAdminUser]
+
+#     def post(self, request):
+#         serializer = LibrarySerializer(data=request.data)
+#         if serializer.is_valid():
+#             # Assign the current user as the owner
+#             library = serializer.save(owner=request.user)
+#             return Response({'message': 'Library created successfully'}, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # ========================= Update Library API ============================
