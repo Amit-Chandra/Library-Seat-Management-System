@@ -9,6 +9,15 @@ from .models import Library, Seat, UserProfile, Payment
 from .serializers import StudentSignupSerializer, UserProfileSerializer, LibrarySerializer, SeatSerializer
 from rest_framework.permissions import IsAdminUser
 from rest_framework.authentication import TokenAuthentication
+from rest_framework import status
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from .models import Library, StudentProfile
+from django.contrib.auth.models import User
+from .serializers import LibrarySerializer, StudentProfileSerializer
+from rest_framework.generics import RetrieveAPIView, DestroyAPIView
+from django.shortcuts import get_object_or_404
 
 # ========================= Helper Function ============================
 def calculate_distance(user_location, library_location):
@@ -174,6 +183,60 @@ class UpdateStudentProfileAPI(APIView):
 
 
 
+
+
+# StudentProfileAPI to create and retrieve student profiles
+class StudentProfileAPI(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        profiles = StudentProfile.objects.all()
+        serializer = StudentProfileSerializer(profiles, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, *args, **kwargs):
+        serializer = StudentProfileSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# ApproveStudentAPI for admins to approve student registration
+class ApproveStudentAPI(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, student_id, *args, **kwargs):
+        try:
+            student = get_object_or_404(StudentProfile, id=student_id)
+            student.is_approved = True
+            student.save()
+            return Response({'status': 'Student approved'}, status=status.HTTP_200_OK)
+        except StudentProfile.DoesNotExist:
+            return Response({'error': 'Student not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+# RetrieveLibraryAPI to get a single library by its ID
+class RetrieveLibraryAPI(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Library.objects.all()
+    serializer_class = LibrarySerializer
+
+    def get(self, request, *args, **kwargs):
+        library = get_object_or_404(Library, id=kwargs.get('library_id'))
+        serializer = LibrarySerializer(library)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# DeleteLibraryAPI to delete a library by its ID
+class DeleteLibraryAPI(DestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Library.objects.all()
+
+    def delete(self, request, *args, **kwargs):
+        library = get_object_or_404(Library, id=kwargs.get('library_id'))
+        library.delete()
+        return Response({'status': 'Library deleted'}, status=status.HTTP_204_NO_CONTENT)
 
 
 

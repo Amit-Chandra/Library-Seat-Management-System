@@ -1,32 +1,82 @@
 from django.urls import path
+from django.contrib import admin
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .api_views import (
     StudentSignupAPI,
+    StudentProfileAPI,
     LibraryListAPI,
     SeatAvailabilityAPI,
+    ApproveStudentAPI,
     CreateLibraryAPI,
+    RetrieveLibraryAPI,
     UpdateLibraryAPI,
+    DeleteLibraryAPI,
     UpdateStudentProfileAPI
 )
 
 urlpatterns = [
-    # Student Signup API
+    path('admin/', admin.site.urls),
+    
+    # JWT Authentication
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
+    # Student Signup
     path('student-signup/', StudentSignupAPI.as_view(), name='student-signup'),
 
-    # Library List API with optional geo-location filtering
+    # Student Profile
+    path('profileview/', StudentProfileAPI.as_view(), name='student_profile_api'),
+    path('update-student-profile/<int:user_id>/', UpdateStudentProfileAPI.as_view(), name='update-student-profile'),
+
+    # Library List (Public Access)
     path('library-list/', LibraryListAPI.as_view(), name='library-list'),
 
-    # Seat Availability API for a specific library
+    # Seat Availability
     path('seat-availability/<int:library_id>/', SeatAvailabilityAPI.as_view(), name='seat-availability'),
 
-    # Create Library API (Admin only)
+    # Approve a student
+    path('studentsapproval/<int:student_id>/approve/', ApproveStudentAPI.as_view(), name='approve_student_api'),
+
+    # Library CRUD Operations (Admin Only)
     path('create-library/', CreateLibraryAPI.as_view(), name='create-library'),
-
-    # Update Library API (Admin only)
+    path('retrieve-library/<int:library_id>/', RetrieveLibraryAPI.as_view(), name='retrieve-library'),
     path('update-library/<int:library_id>/', UpdateLibraryAPI.as_view(), name='update-library'),
-
-    # Update Student Profile API
-    path('update-student-profile/<int:user_id>/', UpdateStudentProfileAPI.as_view(), name='update-student-profile'),
+    path('delete-library/<int:library_id>/', DeleteLibraryAPI.as_view(), name='delete-library'),
 ]
+
+
+
+
+
+# from django.urls import path
+# from .api_views import (
+#     StudentSignupAPI,
+#     LibraryListAPI,
+#     SeatAvailabilityAPI,
+#     CreateLibraryAPI,
+#     UpdateLibraryAPI,
+#     UpdateStudentProfileAPI
+# )
+
+# urlpatterns = [
+#     # Student Signup API
+#     path('student-signup/', StudentSignupAPI.as_view(), name='student-signup'),
+
+#     # Library List API with optional geo-location filtering
+#     path('library-list/', LibraryListAPI.as_view(), name='library-list'),
+
+#     # Seat Availability API for a specific library
+#     path('seat-availability/<int:library_id>/', SeatAvailabilityAPI.as_view(), name='seat-availability'),
+
+#     # Create Library API (Admin only)
+#     path('create-library/', CreateLibraryAPI.as_view(), name='create-library'),
+
+#     # Update Library API (Admin only)
+#     path('update-library/<int:library_id>/', UpdateLibraryAPI.as_view(), name='update-library'),
+
+#     # Update Student Profile API
+#     path('update-student-profile/<int:user_id>/', UpdateStudentProfileAPI.as_view(), name='update-student-profile'),
+# ]
 
 
 
