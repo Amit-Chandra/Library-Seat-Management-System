@@ -3,21 +3,19 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 
 
-# ========================= Library Model with Latitude and Longitude ============================
-# class Library(models.Model):
-#     name = models.CharField(max_length=100)
-#     location = models.CharField(max_length=255)
-#     total_seats = models.PositiveIntegerField()
-#     address = models.CharField(max_length=255, blank=True)
-#     # owner = models.ForeignKey(User, on_delete=models.CASCADE) 
-#     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
-#     # Add latitude and longitude fields to store geo-location
-#     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
-#     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
 
-#     def __str__(self):
-#         return self.name
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        UserProfile.objects.create(user=instance)
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    instance.userprofile.save()
+
 
 class Library(models.Model):
     name = models.CharField(max_length=100)
@@ -84,7 +82,21 @@ class Payment(models.Model):
 
 
 
+# ========================= Library Model with Latitude and Longitude ============================
+# class Library(models.Model):
+#     name = models.CharField(max_length=100)
+#     location = models.CharField(max_length=255)
+#     total_seats = models.PositiveIntegerField()
+#     address = models.CharField(max_length=255, blank=True)
+#     # owner = models.ForeignKey(User, on_delete=models.CASCADE) 
+#     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
 
+#     # Add latitude and longitude fields to store geo-location
+#     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+#     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+
+#     def __str__(self):
+#         return self.name
 
 
 

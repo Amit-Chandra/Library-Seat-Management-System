@@ -193,12 +193,53 @@ class ApproveUserAPI(APIView):
 
 
 # ========================= Assign Role API ============================
+# class AssignRoleAPI(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request, user_id, *args, **kwargs):
+#         # Only superadmin can assign roles
+#         if not request.user.userprofile.role == 'superadmin':
+#             return Response({'error': 'You do not have permission to assign roles.'}, status=status.HTTP_403_FORBIDDEN)
+
+#         # Get the user profile to whom the role will be assigned
+#         user_profile = get_object_or_404(UserProfile, id=user_id)
+
+#         # Get the role and optional library ID from the request data
+#         role = request.data.get('role')
+#         library_id = request.data.get('library_id')  # Required only if role is 'admin'
+
+#         if not role or role not in ['superadmin', 'admin', 'student']:
+#             return Response({'error': 'Invalid or missing role.'}, status=status.HTTP_400_BAD_REQUEST)
+
+#         # If assigning 'admin', ensure library_id is provided
+#         if role == 'admin':
+#             if not library_id:
+#                 return Response({'error': 'Library ID must be provided for admin role.'}, status=status.HTTP_400_BAD_REQUEST)
+#             library = get_object_or_404(Library, id=library_id)
+#             user_profile.library = library
+
+#         # Assign the new role
+#         user_profile.role = role
+
+#         # Save the updated user profile
+#         user_profile.save()
+
+#         return Response({'status': f'Role {role} assigned to user {user_profile.user.username}'}, status=status.HTTP_200_OK)
+
+
+
+# ========================= Assign Role API ============================
 class AssignRoleAPI(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, user_id, *args, **kwargs):
-        # Only superadmin can assign roles
-        if not request.user.userprofile.role == 'superadmin':
+        # Check if the requesting user has a UserProfile, and ensure they're a superadmin
+        try:
+            user_profile_requesting = request.user.userprofile
+        except UserProfile.DoesNotExist:
+            return Response({'error': 'User profile not found for the requesting user.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if user_profile_requesting.role != 'superadmin':
             return Response({'error': 'You do not have permission to assign roles.'}, status=status.HTTP_403_FORBIDDEN)
 
         # Get the user profile to whom the role will be assigned
@@ -206,15 +247,13 @@ class AssignRoleAPI(APIView):
 
         # Get the role and optional library ID from the request data
         role = request.data.get('role')
-        library_id = request.data.get('library_id')  # Required only if role is 'admin'
+        library_id = request.data.get('library_id')  # Optional for both admin and student
 
         if not role or role not in ['superadmin', 'admin', 'student']:
             return Response({'error': 'Invalid or missing role.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # If assigning 'admin', ensure library_id is provided
-        if role == 'admin':
-            if not library_id:
-                return Response({'error': 'Library ID must be provided for admin role.'}, status=status.HTTP_400_BAD_REQUEST)
+        # If library_id is provided, assign it to the user profile (for both admin and student)
+        if library_id:
             library = get_object_or_404(Library, id=library_id)
             user_profile.library = library
 
