@@ -31,18 +31,6 @@ from .serializers import UserSignupSerializer
 def calculate_distance(user_location, library_location):
     return geodesic(user_location, library_location).km  # Returns distance in kilometers
 
-# ========================= Student Signup API ============================
-# class StudentSignupAPI(APIView):
-#     def post(self, request):
-#         serializer = StudentSignupSerializer(data=request.data)
-#         if serializer.is_valid():
-#             user = serializer.save()
-#             # Create user profile
-#             UserProfile.objects.create(user=user, role='student')
-#             return Response({'message': 'Student registered successfully'}, status=status.HTTP_201_CREATED)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 
 
 class SignupAPI(generics.CreateAPIView):
@@ -64,43 +52,6 @@ class SignupAPI(generics.CreateAPIView):
         )
         
         return Response({"message": "Student registered successfully"}, status=status.HTTP_201_CREATED)
-
-
-# ========================= Library List API with Geo-location ============================
-# class LibraryListAPI(APIView):
-#     # Removed authentication requirement to allow public access
-#     def get(self, request):
-#         user_lat = request.query_params.get('lat')  # User's latitude
-#         user_lng = request.query_params.get('lng')  # User's longitude
-
-#         # Fetch all libraries
-#         libraries = Library.objects.all()
-#         library_data = []
-
-#         if user_lat and user_lng:
-#             user_location = (float(user_lat), float(user_lng))
-#             for library in libraries:
-#                 library_location = (library.latitude, library.longitude)
-#                 distance = calculate_distance(user_location, library_location)
-#                 library_data.append({
-#                     'name': library.name,
-#                     'address': library.address,
-#                     'distance': f"{distance:.2f} km",
-#                     'owner': library.owner.username,
-#                     'seat_availability': library.seats.count()
-#                 })
-#         else:
-#             # If no user location is provided, return all libraries without distance calculation
-#             for library in libraries:
-#                 library_data.append({
-#                     'name': library.name,
-#                     'address': library.address,
-#                     'owner': library.owner.username,
-#                     'seat_availability': library.seats.count()
-#                 })
-            
-
-#         return Response(library_data)
 
 
 
@@ -165,18 +116,6 @@ class CreateLibraryAPI(APIView):
             return Response({'message': 'Library created successfully'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# ========================= Create Library API with Geo-location ============================
-# class CreateLibraryAPI(APIView):
-#     permission_classes = [IsAdminUser]
-
-#     def post(self, request):
-#         serializer = LibrarySerializer(data=request.data)
-#         if serializer.is_valid():
-#             # Assign the current user as the owner
-#             library = serializer.save(owner=request.user)
-#             return Response({'message': 'Library created successfully'}, status=status.HTTP_201_CREATED)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 # ========================= Update Library API ============================
 class UpdateLibraryAPI(APIView):
@@ -231,6 +170,204 @@ class UserProfileAPI(APIView):
             serializer.save(user=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+# ========================= Approve Users API ============================
+class ApproveUserAPI(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, user_id, *args, **kwargs):
+        # Check if the user is a superadmin or admin
+        if not (request.user.is_superuser or request.user.is_staff):
+            return Response({'error': 'You do not have permission to approve users.'}, status=status.HTTP_403_FORBIDDEN)
+
+        user_profile = get_object_or_404(UserProfile, id=user_id)
+        user_profile.approved = True
+        user_profile.save()
+        return Response({'status': 'User approved'}, status=status.HTTP_200_OK)
+
+
+
+
+
+# ========================= Assign Role API ============================
+class AssignRoleAPI(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, user_id, *args, **kwargs):
+        # Only superadmin can assign roles
+        if not request.user.userprofile.role == 'superadmin':
+            return Response({'error': 'You do not have permission to assign roles.'}, status=status.HTTP_403_FORBIDDEN)
+
+        # Get the user profile to whom the role will be assigned
+        user_profile = get_object_or_404(UserProfile, id=user_id)
+
+        # Get the role and optional library ID from the request data
+        role = request.data.get('role')
+        library_id = request.data.get('library_id')  # Required only if role is 'admin'
+
+        if not role or role not in ['superadmin', 'admin', 'student']:
+            return Response({'error': 'Invalid or missing role.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # If assigning 'admin', ensure library_id is provided
+        if role == 'admin':
+            if not library_id:
+                return Response({'error': 'Library ID must be provided for admin role.'}, status=status.HTTP_400_BAD_REQUEST)
+            library = get_object_or_404(Library, id=library_id)
+            user_profile.library = library
+
+        # Assign the new role
+        user_profile.role = role
+
+        # Save the updated user profile
+        user_profile.save()
+
+        return Response({'status': f'Role {role} assigned to user {user_profile.user.username}'}, status=status.HTTP_200_OK)
+
+
+
+# RetrieveLibraryAPI to get a single library by its ID
+class RetrieveLibraryAPI(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Library.objects.all()
+    serializer_class = LibrarySerializer
+
+    def get(self, request, *args, **kwargs):
+        library = get_object_or_404(Library, id=kwargs.get('library_id'))
+        serializer = LibrarySerializer(library)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# DeleteLibraryAPI to delete a library by its ID
+class DeleteLibraryAPI(DestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Library.objects.all()
+
+    def delete(self, request, *args, **kwargs):
+        library = get_object_or_404(Library, id=kwargs.get('library_id'))
+        library.delete()
+        return Response({'status': 'Library deleted'}, status=status.HTTP_204_NO_CONTENT)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ========================= Student Signup API ============================
+# class StudentSignupAPI(APIView):
+#     def post(self, request):
+#         serializer = StudentSignupSerializer(data=request.data)
+#         if serializer.is_valid():
+#             user = serializer.save()
+#             # Create user profile
+#             UserProfile.objects.create(user=user, role='student')
+#             return Response({'message': 'Student registered successfully'}, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+
+# ========================= Library List API with Geo-location ============================
+# class LibraryListAPI(APIView):
+#     # Removed authentication requirement to allow public access
+#     def get(self, request):
+#         user_lat = request.query_params.get('lat')  # User's latitude
+#         user_lng = request.query_params.get('lng')  # User's longitude
+
+#         # Fetch all libraries
+#         libraries = Library.objects.all()
+#         library_data = []
+
+#         if user_lat and user_lng:
+#             user_location = (float(user_lat), float(user_lng))
+#             for library in libraries:
+#                 library_location = (library.latitude, library.longitude)
+#                 distance = calculate_distance(user_location, library_location)
+#                 library_data.append({
+#                     'name': library.name,
+#                     'address': library.address,
+#                     'distance': f"{distance:.2f} km",
+#                     'owner': library.owner.username,
+#                     'seat_availability': library.seats.count()
+#                 })
+#         else:
+#             # If no user location is provided, return all libraries without distance calculation
+#             for library in libraries:
+#                 library_data.append({
+#                     'name': library.name,
+#                     'address': library.address,
+#                     'owner': library.owner.username,
+#                     'seat_availability': library.seats.count()
+#                 })
+            
+
+#         return Response(library_data)
+
+
+
+
+
+
+# ========================= Create Library API with Geo-location ============================
+# class CreateLibraryAPI(APIView):
+#     permission_classes = [IsAdminUser]
+
+#     def post(self, request):
+#         serializer = LibrarySerializer(data=request.data)
+#         if serializer.is_valid():
+#             # Assign the current user as the owner
+#             library = serializer.save(owner=request.user)
+#             return Response({'message': 'Library created successfully'}, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 
 # ApproveUserAPI for admins to approve user registration
@@ -312,81 +449,66 @@ class UserProfileAPI(APIView):
 
 #         return Response({'status': 'User approved', 'role': user_profile_to_approve.role}, status=status.HTTP_200_OK)
 
-class ApproveUserAPI(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, user_id, *args, **kwargs):
-        print("Request received to approve user:", user_id)
-        # Check if the requesting user is a superadmin
-        requesting_user_profile = get_object_or_404(UserProfile, user=request.user)
-        if requesting_user_profile.role != 'superadmin':
-            return Response({'error': 'Permission denied. Only superadmin can approve users.'},
-                            status=status.HTTP_403_FORBIDDEN)
-
-        print(f"Trying to approve UserProfile with ID: {user_id}")
-
-        # Attempt to get the user profile to approve
-        try:
-            user_profile_to_approve = UserProfile.objects.get(id=user_id)
-            print(f"UserProfile found: {user_profile_to_approve}")
-        except UserProfile.DoesNotExist:
-            print(f"No UserProfile found with ID: {user_id}")
-            return Response({'error': 'UserProfile not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-        # Validate and update the role
-        serializer = ApproveUserSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        user_profile_to_approve.approved = True
-        user_profile_to_approve.role = serializer.validated_data['role']
-        user_profile_to_approve.save()
-
-        return Response({'status': 'User approved', 'role': user_profile_to_approve.role}, status=status.HTTP_200_OK)
 
 
 
-# RetrieveLibraryAPI to get a single library by its ID
-class RetrieveLibraryAPI(RetrieveAPIView):
-    permission_classes = [IsAuthenticated]
-    queryset = Library.objects.all()
-    serializer_class = LibrarySerializer
+# class ApproveUserAPI(APIView):
+#     permission_classes = [IsAuthenticated]
 
-    def get(self, request, *args, **kwargs):
-        library = get_object_or_404(Library, id=kwargs.get('library_id'))
-        serializer = LibrarySerializer(library)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+#     def post(self, request, user_id, *args, **kwargs):
+#         print("Request received to approve user:", user_id)
+#         # Check if the requesting user is a superadmin
+#         requesting_user_profile = get_object_or_404(UserProfile, user=request.user)
+#         if requesting_user_profile.role != 'superadmin':
+#             return Response({'error': 'Permission denied. Only superadmin can approve users.'},
+#                             status=status.HTTP_403_FORBIDDEN)
 
+#         print(f"Trying to approve UserProfile with ID: {user_id}")
 
-# DeleteLibraryAPI to delete a library by its ID
-class DeleteLibraryAPI(DestroyAPIView):
-    permission_classes = [IsAuthenticated]
-    queryset = Library.objects.all()
+#         # Attempt to get the user profile to approve
+#         try:
+#             user_profile_to_approve = UserProfile.objects.get(id=user_id)
+#             print(f"UserProfile found: {user_profile_to_approve}")
+#         except UserProfile.DoesNotExist:
+#             print(f"No UserProfile found with ID: {user_id}")
+#             return Response({'error': 'UserProfile not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-    def delete(self, request, *args, **kwargs):
-        library = get_object_or_404(Library, id=kwargs.get('library_id'))
-        library.delete()
-        return Response({'status': 'Library deleted'}, status=status.HTTP_204_NO_CONTENT)
+#         # Validate and update the role
+#         serializer = ApproveUserSerializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
 
+#         user_profile_to_approve.approved = True
+#         user_profile_to_approve.role = serializer.validated_data['role']
+#         user_profile_to_approve.save()
 
+#         return Response({'status': 'User approved', 'role': user_profile_to_approve.role}, status=status.HTTP_200_OK)
 
+# class ApproveUserAPI(APIView):
+#     permission_classes = [IsAuthenticated]
 
+#     def post(self, request, user_id, *args, **kwargs):
+#         print("Request received to approve user:", user_id)
+#         # Check if the requesting user is a superadmin
+#         requesting_user_profile = get_object_or_404(UserProfile, user=request.user)
+#         if requesting_user_profile.role != 'superadmin':
+#             return Response({'error': 'Permission denied. Only superadmin can approve users.'},
+#                             status=status.HTTP_403_FORBIDDEN)
 
+#         print(f"Trying to approve UserProfile with User ID: {user_id}")
 
+#         # Get the UserProfile based on the User's ID
+#         user_profile_to_approve = get_object_or_404(UserProfile, user__id=user_id)
+#         print(f"UserProfile found: {user_profile_to_approve}")
 
+#         # Validate and update the role
+#         serializer = ApproveUserSerializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
 
+#         user_profile_to_approve.approved = True
+#         user_profile_to_approve.role = serializer.validated_data['role']
+#         user_profile_to_approve.save()
 
-
-
-
-
-
-
-
-
-
-
-
-
+#         return Response({'status': 'User approved', 'role': user_profile_to_approve.role}, status=status.HTTP_200_OK)
 
 
 

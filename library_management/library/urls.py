@@ -11,7 +11,7 @@ from .api_views import (
     RetrieveLibraryAPI,
     UpdateLibraryAPI,
     DeleteLibraryAPI,
-    UpdateStudentProfileAPI
+    AssignRoleAPI
 )
 
 urlpatterns = [
@@ -26,6 +26,7 @@ urlpatterns = [
 
     path('user-profiles/', UserProfileAPI.as_view(), name='user-profile-list'),  # List and create user profiles
     path('user-profiles/approve/<int:user_id>/', ApproveUserAPI.as_view(), name='approve-user'), 
+    path('assign-role/<int:user_id>/', AssignRoleAPI.as_view(), name='assign_role'),
     
 
     # Library List (Public Access)
@@ -38,7 +39,6 @@ urlpatterns = [
 
     # Library CRUD Operations (Admin Only)
     path('create-library/', CreateLibraryAPI.as_view(), name='create-library'),
-    # path('retrieve-library/<int:library_id>/', RetrieveLibraryAPI.as_view(), name='retrieve-library'),
     path('update-library/<int:library_id>/', UpdateLibraryAPI.as_view(), name='update-library'),
     path('delete-library/<int:library_id>/', DeleteLibraryAPI.as_view(), name='delete-library'),
 ]
