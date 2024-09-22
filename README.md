@@ -533,3 +533,31 @@ Before testing the protected APIs (e.g., fetching student profiles, libraries, e
 Use the `access` token in the `Authorization` header (`Authorization: Bearer <ACCESS_TOKEN>`) for subsequent authenticated API requests.
 
 More API will be added soon.
+
+
+Need to Assign if Find Permission Issue:
+
+Since you confirmed that the `UserProfile` for `superadmin` exists, but the role is not being printed, let's check the role directly:
+
+```python
+print(user_profile.role)  # This should print the role of the user
+```
+
+If it prints `None` or does not return the expected role, then the role might not have been set correctly when the profile was created.
+
+### Steps to Investigate Further:
+
+1. **Check Role Value**: After retrieving the `UserProfile`, directly print the `role`:
+   ```python
+   print(f"Role of superadmin: {user_profile.role}")
+   ```
+
+2. **Inspect Database**: Open the Django admin interface or use a database tool to manually check the `UserProfile` table for the `superadmin` user. Ensure the `role` field has the correct value.
+
+3. **Update Role**: If the role is missing or incorrect, you can set it directly in the shell:
+   ```python
+   user_profile.role = 'superadmin'  # Or any valid role you want to assign
+   user_profile.save()
+   ```
+
+After making any changes, try hitting your API endpoint again to see if the permission issue persists. Let me know what you find!
