@@ -33,6 +33,28 @@ def calculate_distance(user_location, library_location):
 
 
 
+# class SignupAPI(generics.CreateAPIView):
+#     serializer_class = UserSignupSerializer
+
+#     def create(self, request, *args, **kwargs):
+#         serializer = self.get_serializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         user = serializer.save()
+
+#         # Create UserProfile for the new user
+#         UserProfile.objects.create(
+#             user=user,
+#             dob=request.data.get('dob'),
+#             hobbies=request.data.get('hobbies'),
+#             contact_number=request.data.get('contact_number'),
+#             latitude=request.data.get('latitude'),
+#             longitude=request.data.get('longitude')
+#         )
+        
+#         return Response({"message": "Student registered successfully"}, status=status.HTTP_201_CREATED)
+
+
+
 class SignupAPI(generics.CreateAPIView):
     serializer_class = UserSignupSerializer
 
@@ -41,16 +63,17 @@ class SignupAPI(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
 
-        # Create UserProfile for the new user
-        UserProfile.objects.create(
-            user=user,
-            dob=request.data.get('dob'),
-            hobbies=request.data.get('hobbies'),
-            contact_number=request.data.get('contact_number'),
-            latitude=request.data.get('latitude'),
-            longitude=request.data.get('longitude')
-        )
-        
+        # The profile will automatically be created via the post_save signal
+
+        # Update the UserProfile with additional fields
+        user_profile = user.userprofile
+        user_profile.dob = request.data.get('dob')
+        user_profile.hobbies = request.data.get('hobbies')
+        user_profile.contact_number = request.data.get('contact_number')
+        user_profile.latitude = request.data.get('latitude')
+        user_profile.longitude = request.data.get('longitude')
+        user_profile.save()
+
         return Response({"message": "Student registered successfully"}, status=status.HTTP_201_CREATED)
 
 
@@ -190,44 +213,6 @@ class ApproveUserAPI(APIView):
 
 
 
-
-
-# ========================= Assign Role API ============================
-# class AssignRoleAPI(APIView):
-#     permission_classes = [IsAuthenticated]
-
-#     def post(self, request, user_id, *args, **kwargs):
-#         # Only superadmin can assign roles
-#         if not request.user.userprofile.role == 'superadmin':
-#             return Response({'error': 'You do not have permission to assign roles.'}, status=status.HTTP_403_FORBIDDEN)
-
-#         # Get the user profile to whom the role will be assigned
-#         user_profile = get_object_or_404(UserProfile, id=user_id)
-
-#         # Get the role and optional library ID from the request data
-#         role = request.data.get('role')
-#         library_id = request.data.get('library_id')  # Required only if role is 'admin'
-
-#         if not role or role not in ['superadmin', 'admin', 'student']:
-#             return Response({'error': 'Invalid or missing role.'}, status=status.HTTP_400_BAD_REQUEST)
-
-#         # If assigning 'admin', ensure library_id is provided
-#         if role == 'admin':
-#             if not library_id:
-#                 return Response({'error': 'Library ID must be provided for admin role.'}, status=status.HTTP_400_BAD_REQUEST)
-#             library = get_object_or_404(Library, id=library_id)
-#             user_profile.library = library
-
-#         # Assign the new role
-#         user_profile.role = role
-
-#         # Save the updated user profile
-#         user_profile.save()
-
-#         return Response({'status': f'Role {role} assigned to user {user_profile.user.username}'}, status=status.HTTP_200_OK)
-
-
-
 # ========================= Assign Role API ============================
 class AssignRoleAPI(APIView):
     permission_classes = [IsAuthenticated]
@@ -332,6 +317,44 @@ class DeleteLibraryAPI(DestroyAPIView):
 
 
 
+
+
+
+
+
+# ========================= Assign Role API ============================
+# class AssignRoleAPI(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request, user_id, *args, **kwargs):
+#         # Only superadmin can assign roles
+#         if not request.user.userprofile.role == 'superadmin':
+#             return Response({'error': 'You do not have permission to assign roles.'}, status=status.HTTP_403_FORBIDDEN)
+
+#         # Get the user profile to whom the role will be assigned
+#         user_profile = get_object_or_404(UserProfile, id=user_id)
+
+#         # Get the role and optional library ID from the request data
+#         role = request.data.get('role')
+#         library_id = request.data.get('library_id')  # Required only if role is 'admin'
+
+#         if not role or role not in ['superadmin', 'admin', 'student']:
+#             return Response({'error': 'Invalid or missing role.'}, status=status.HTTP_400_BAD_REQUEST)
+
+#         # If assigning 'admin', ensure library_id is provided
+#         if role == 'admin':
+#             if not library_id:
+#                 return Response({'error': 'Library ID must be provided for admin role.'}, status=status.HTTP_400_BAD_REQUEST)
+#             library = get_object_or_404(Library, id=library_id)
+#             user_profile.library = library
+
+#         # Assign the new role
+#         user_profile.role = role
+
+#         # Save the updated user profile
+#         user_profile.save()
+
+#         return Response({'status': f'Role {role} assigned to user {user_profile.user.username}'}, status=status.HTTP_200_OK)
 
 
 
