@@ -561,3 +561,6 @@ If it prints `None` or does not return the expected role, then the role might no
    ```
 
 After making any changes, try hitting your API endpoint again to see if the permission issue persists. Let me know what you find!
+
+
+Updated the API for signup and login
