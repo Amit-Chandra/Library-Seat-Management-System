@@ -4,6 +4,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .api_views import (
     ApproveUserAPI,
     SignupAPI,
+    LoginAPI,
     LibraryListAPI,
     SeatAvailabilityAPI,
     UserProfileAPI,
@@ -23,6 +24,7 @@ urlpatterns = [
 
     # Student Signup
     path('user-signup/', SignupAPI.as_view(), name='user-signup'),
+    path('user-login/', LoginAPI.as_view(), name='user-login'),
 
     path('user-profiles/', UserProfileAPI.as_view(), name='user-profile-list'),  # List and create user profiles
     path('user-profiles/approve/<int:user_id>/', ApproveUserAPI.as_view(), name='approve-user'), 
