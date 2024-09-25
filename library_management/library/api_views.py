@@ -101,9 +101,7 @@ from .serializers import UserProfileSerializer, LibrarySerializer
 from django.contrib.auth.models import User
 from geopy.distance import geodesic
 
-# Helper function to calculate distance between two geo-locations
-def calculate_distance(user_location, library_location):
-    return geodesic(user_location, library_location).km  # Returns distance in kilometers
+
 
 # ========================= Login API ============================
 
