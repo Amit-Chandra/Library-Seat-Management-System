@@ -105,6 +105,72 @@ from geopy.distance import geodesic
 
 # ========================= Login API ============================
 
+# class LoginAPI(APIView):
+#     def post(self, request):
+#         username = request.data.get('username')
+#         password = request.data.get('password')
+        
+#         user = authenticate(username=username, password=password)
+        
+#         if user is not None:
+#             try:
+#                 # Get the UserProfile for the authenticated user
+#                 user_profile = UserProfile.objects.get(user=user)
+#             except UserProfile.DoesNotExist:
+#                 return Response({"error": "User profile not found"}, status=status.HTTP_404_NOT_FOUND)
+
+#             # Check approval status
+#             if not user_profile.approved:
+#                 # User is not approved, return libraries near their location
+#                 user_lat = request.data.get('latitude')
+#                 user_lng = request.data.get('longitude')
+
+#                 if user_lat and user_lng:
+#                     user_location = (float(user_lat), float(user_lng))
+#                     libraries = Library.objects.all()
+#                     nearby_libraries = []
+                    
+#                     for library in libraries:
+#                         library_location = (library.latitude, library.longitude)
+#                         distance = calculate_distance(user_location, library_location)
+#                         nearby_libraries.append({
+#                             'name': library.name,
+#                             'location': library.location,
+#                             'distance': f"{distance:.2f} km",
+#                             'owner': library.owner.username if library.owner else "No Owner",
+#                             'seat_availability': library.seats.filter(is_occupied=False).count()
+#                         })
+                    
+#                     return Response({
+#                         "message": "User is not approved, but here are nearby libraries.",
+#                         "libraries": nearby_libraries
+#                     }, status=status.HTTP_200_OK)
+
+#                 return Response({"message": "User is not approved and no location data was provided"}, status=status.HTTP_403_FORBIDDEN)
+
+#             # Handle role-based logic if the user is approved
+#             if user_profile.role == 'student':
+#                 return Response({
+#                     "message": "Student login successful",
+#                     "profile": UserProfileSerializer(user_profile).data
+#                 }, status=status.HTTP_200_OK)
+            
+#             elif user_profile.role == 'admin':
+#                 if user_profile.library:
+#                     return Response({
+#                         "message": "Admin login successful",
+#                         "library": LibrarySerializer(user_profile.library).data
+#                     }, status=status.HTTP_200_OK)
+#                 else:
+#                     return Response({"error": "Admin does not have an assigned library"}, status=status.HTTP_403_FORBIDDEN)
+
+#             return Response({"message": "Login successful"}, status=status.HTTP_200_OK)
+
+#         else:
+#             return Response({"error": "Invalid username or password"}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+
 class LoginAPI(APIView):
     def post(self, request):
         username = request.data.get('username')
@@ -119,9 +185,24 @@ class LoginAPI(APIView):
             except UserProfile.DoesNotExist:
                 return Response({"error": "User profile not found"}, status=status.HTTP_404_NOT_FOUND)
 
-            # Check approval status
+            # Check if the user is superadmin (no approval required)
+            if user_profile.role == 'superadmin':
+                # Fetch all user profiles and libraries for the admin panel
+                all_users = UserProfile.objects.all()
+                all_libraries = Library.objects.all()
+
+                return Response({
+                    "message": "Superadmin login successful",
+                    "profile": UserProfileSerializer(user_profile).data,
+                    "admin_panel": {
+                        "users": UserProfileSerializer(all_users, many=True).data,
+                        "libraries": LibrarySerializer(all_libraries, many=True).data
+                    }
+                }, status=status.HTTP_200_OK)
+
+            # Check approval status for other roles
             if not user_profile.approved:
-                # User is not approved, return libraries near their location
+                # User is not approved, return profile and libraries near their location
                 user_lat = request.data.get('latitude')
                 user_lng = request.data.get('longitude')
 
@@ -143,10 +224,14 @@ class LoginAPI(APIView):
                     
                     return Response({
                         "message": "User is not approved, but here are nearby libraries.",
+                        "profile": UserProfileSerializer(user_profile).data,
                         "libraries": nearby_libraries
                     }, status=status.HTTP_200_OK)
 
-                return Response({"message": "User is not approved and no location data was provided"}, status=status.HTTP_403_FORBIDDEN)
+                return Response({
+                    "message": "User is not approved and no location data was provided",
+                    "profile": UserProfileSerializer(user_profile).data
+                }, status=status.HTTP_403_FORBIDDEN)
 
             # Handle role-based logic if the user is approved
             if user_profile.role == 'student':
@@ -157,20 +242,33 @@ class LoginAPI(APIView):
             
             elif user_profile.role == 'admin':
                 if user_profile.library:
+                    # Admin is approved and has a library assigned, return library details and students
+                    students_in_library = user_profile.library.students.all()
+                    seat_availability = user_profile.library.seats.filter(is_occupied=False).count()
+                    
                     return Response({
                         "message": "Admin login successful",
-                        "library": LibrarySerializer(user_profile.library).data
+                        "profile": UserProfileSerializer(user_profile).data,
+                        "library": {
+                            "details": LibrarySerializer(user_profile.library).data,
+                            "students": UserProfileSerializer(students_in_library, many=True).data,
+                            "seat_availability": seat_availability
+                        }
                     }, status=status.HTTP_200_OK)
                 else:
-                    return Response({"error": "Admin does not have an assigned library"}, status=status.HTTP_403_FORBIDDEN)
+                    # Admin is approved but no library is assigned, return list of libraries
+                    all_libraries = Library.objects.all()
+
+                    return Response({
+                        "message": "Admin login successful but no library assigned",
+                        "profile": UserProfileSerializer(user_profile).data,
+                        "libraries": LibrarySerializer(all_libraries, many=True).data
+                    }, status=status.HTTP_200_OK)
 
             return Response({"message": "Login successful"}, status=status.HTTP_200_OK)
 
         else:
             return Response({"error": "Invalid username or password"}, status=status.HTTP_401_UNAUTHORIZED)
-
-
-
 
 
 
