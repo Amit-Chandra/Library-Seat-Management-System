@@ -64,10 +64,20 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = UserProfile
         fields = '__all__'  # Adjust fields as needed
 
+# class LibrarySerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Library
+#         fields = '__all__'  # Adjust fields as needed
+
 class LibrarySerializer(serializers.ModelSerializer):
+    seat_availability = serializers.SerializerMethodField()
+
     class Meta:
         model = Library
-        fields = '__all__'  # Adjust fields as needed
+        fields = ['id', 'name', 'location', 'seat_availability', 'owner']
+
+    def get_seat_availability(self, obj):
+        return obj.seats.filter(is_occupied=False).count()
 
 
 

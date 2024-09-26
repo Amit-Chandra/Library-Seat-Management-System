@@ -42,7 +42,7 @@ class Seat(models.Model):
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     role = models.CharField(max_length=20, choices=(('superadmin', 'Super Admin'), ('admin', 'Admin'), ('student', 'Student')))
-    library = models.ForeignKey(Library, on_delete=models.SET_NULL, null=True, blank=True)
+    library = models.ForeignKey(Library, on_delete=models.SET_NULL, null=True, blank=True, related_name='students')
     dob = models.DateField(null=True, blank=True)
     hobbies = models.TextField(blank=True)
     contact_number = models.CharField(max_length=15, blank=True)
@@ -53,6 +53,7 @@ class UserProfile(models.Model):
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
 
     approved = models.BooleanField(default=False)
+
 
     def __str__(self):
         return self.user.username

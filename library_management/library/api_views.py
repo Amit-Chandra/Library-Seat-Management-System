@@ -35,6 +35,9 @@ from rest_framework import status
 from geopy.distance import geodesic
 from .models import Library, UserProfile
 from .serializers import LibrarySerializer
+import logging
+
+logger = logging.getLogger(__name__)
 
 # ========================= Helper Function ============================
 def calculate_distance(user_location, library_location):
@@ -177,6 +180,10 @@ class LoginAPI(APIView):
         password = request.data.get('password')
         
         user = authenticate(username=username, password=password)
+
+        if user is None:
+            logger.error(f"Authentication failed for user: {username}")
+            return Response({"error": "Invalid username or password"}, status=status.HTTP_401_UNAUTHORIZED)
         
         if user is not None:
             try:
@@ -240,10 +247,35 @@ class LoginAPI(APIView):
                     "profile": UserProfileSerializer(user_profile).data
                 }, status=status.HTTP_200_OK)
             
+            # elif user_profile.role == 'admin':
+            #     if user_profile.library:
+            #         # Admin is approved and has a library assigned, return library details and students
+            #         students_in_library = user_profile.library.students.all()
+            #         seat_availability = user_profile.library.seats.filter(is_occupied=False).count()
+                    
+            #         return Response({
+            #             "message": "Admin login successful",
+            #             "profile": UserProfileSerializer(user_profile).data,
+            #             "library": {
+            #                 "details": LibrarySerializer(user_profile.library).data,
+            #                 "students": UserProfileSerializer(students_in_library, many=True).data,
+            #                 "seat_availability": seat_availability
+            #             }
+            #         }, status=status.HTTP_200_OK)
+            #     else:
+            #         # Admin is approved but no library is assigned, return list of libraries
+            #         all_libraries = Library.objects.all()
+
+            #         return Response({
+            #             "message": "Admin login successful but no library assigned",
+            #             "profile": UserProfileSerializer(user_profile).data,
+            #             "libraries": LibrarySerializer(all_libraries, many=True).data
+            #         }, status=status.HTTP_200_OK)
+
             elif user_profile.role == 'admin':
                 if user_profile.library:
                     # Admin is approved and has a library assigned, return library details and students
-                    students_in_library = user_profile.library.students.all()
+                    students_in_library = user_profile.library.students.all()  # This now works
                     seat_availability = user_profile.library.seats.filter(is_occupied=False).count()
                     
                     return Response({
@@ -264,6 +296,8 @@ class LoginAPI(APIView):
                         "profile": UserProfileSerializer(user_profile).data,
                         "libraries": LibrarySerializer(all_libraries, many=True).data
                     }, status=status.HTTP_200_OK)
+
+
 
             return Response({"message": "Login successful"}, status=status.HTTP_200_OK)
 
@@ -288,12 +322,14 @@ class LibraryListAPI(APIView):
             for library in libraries:
                 library_location = (library.latitude, library.longitude)
                 distance = calculate_distance(user_location, library_location)
+                available_seats = library.seats.filter(is_occupied=False).count()
                 library_data.append({
+                    "id": library.id,
                     'name': library.name,
                     'location': library.location,
                     'distance': f"{distance:.2f} km",
                     'owner': library.owner.username if library.owner else "No Owner",
-                    'seat_availability': library.seats.filter(is_occupied=False).count()
+                    'seat_availability': available_seats
                 })
         else:
             # If no user location is provided, return all libraries without distance calculation
@@ -319,7 +355,9 @@ class SeatAvailabilityAPI(APIView):
         })
 
 # ========================= Create Library API with Geo-location ============================
-class CreateLibraryAPI(APIView):
+
+
+# class CreateLibraryAPI(APIView):
     permission_classes = [IsAdminUser]
 
     def post(self, request):
@@ -330,6 +368,27 @@ class CreateLibraryAPI(APIView):
             library.latitude = request.data.get('latitude')
             library.longitude = request.data.get('longitude')
             library.save()
+            return Response({'message': 'Library created successfully'}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CreateLibraryAPI(APIView):
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        serializer = LibrarySerializer(data=request.data)
+        if serializer.is_valid():
+            # Create the library and assign the current user as the owner
+            library = serializer.save(owner=request.user)
+            library.latitude = request.data.get('latitude')
+            library.longitude = request.data.get('longitude')
+            library.save()
+
+            # Add seats to the newly created library
+            number_of_seats = request.data.get('total_seats', 10)  # Default to 10 seats if not provided
+            for seat_number in range(1, number_of_seats + 1):
+                Seat.objects.create(library=library, seat_number=seat_number, is_occupied=False)
+
             return Response({'message': 'Library created successfully'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
