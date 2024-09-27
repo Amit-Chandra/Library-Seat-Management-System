@@ -460,14 +460,33 @@ class UpdateStudentProfileAPI(APIView):
 
 
 # UserProfileAPI to create and retrieve user profiles
+
+# class UserProfileAPI(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request, *args, **kwargs):
+#         profiles = UserProfile.objects.all()
+#         serializer = UserProfileSerializer(profiles, many=True)
+#         return Response(serializer.data)
+
+#     def post(self, request, *args, **kwargs):
+#         serializer = UserProfileSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save(user=request.user)
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class UserProfileAPI(APIView):
     permission_classes = [IsAuthenticated]
 
+    # Retrieve all profiles
     def get(self, request, *args, **kwargs):
         profiles = UserProfile.objects.all()
         serializer = UserProfileSerializer(profiles, many=True)
         return Response(serializer.data)
 
+    # Create a new profile
     def post(self, request, *args, **kwargs):
         serializer = UserProfileSerializer(data=request.data)
         if serializer.is_valid():
@@ -475,7 +494,18 @@ class UserProfileAPI(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    # Update an existing profile
+    def put(self, request, *args, **kwargs):
+        try:
+            profile = UserProfile.objects.get(user=request.user)  # Get the profile of the logged-in user
+        except UserProfile.DoesNotExist:
+            return Response({"error": "Profile not found."}, status=status.HTTP_404_NOT_FOUND)
 
+        serializer = UserProfileSerializer(profile, data=request.data, partial=False)  # Use partial=True for PATCH
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # ========================= Approve Users API ============================

@@ -131,10 +131,10 @@ class LibrarySerializer(serializers.ModelSerializer):
 
 
 
-class UserProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UserProfile
-        fields = '__all__'  # Adjust fields as needed
+# class UserProfileSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = UserProfile
+#         fields = '__all__' 
 
 # class LibrarySerializer(serializers.ModelSerializer):
 #     class Meta:
@@ -150,6 +150,40 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 #     def get_seat_availability(self, obj):
 #         return obj.seats.filter(is_occupied=False).count()
+
+
+
+
+# Serializer for User model to include in UserProfile
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'first_name', 'last_name']  # Include fields you need
+
+# UserProfileSerializer updated to include nested User details
+class UserProfileSerializer(serializers.ModelSerializer):
+    # user = UserSerializer(read_only=True)
+    email = serializers.EmailField(source='user.email', read_only=True)
+    username = serializers.CharField(source='user.username', read_only=True)
+    first_name = serializers.CharField(source='user.first_name', required=False)
+    last_name = serializers.CharField(source='user.last_name', required=False)
+
+    class Meta:
+        model = UserProfile
+        fields = ['id', 'role', 'dob', 'hobbies', 'contact_number', 'location', 'latitude', 'longitude', 'approved', 'library', 'email', 'username', 'first_name', 'last_name']
+
+
+    def update(self, instance, validated_data):
+        # Update the User model fields for email, username, first_name, last_name
+        user_data = validated_data.pop('user', {})
+        instance.user.email = user_data.get('email', instance.user.email)
+        instance.user.username = user_data.get('username', instance.user.username)
+        instance.user.first_name = user_data.get('first_name', instance.user.first_name)
+        instance.user.last_name = user_data.get('last_name', instance.user.last_name)
+        instance.user.save()
+
+        # Update the UserProfile model fields
+        return super().update(instance, validated_data)
 
 
 
