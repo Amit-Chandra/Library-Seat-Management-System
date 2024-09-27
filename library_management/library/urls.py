@@ -26,9 +26,10 @@ urlpatterns = [
     path('user-signup/', SignupAPI.as_view(), name='user-signup'),
     path('user-login/', LoginAPI.as_view(), name='user-login'),
 
-    path('user-profiles/', UserProfileAPI.as_view(), name='user-profile-list'),  # List and create user profiles
+    path('user-profiles/', UserProfileAPI.as_view(), name='user-profile-list'), 
     path('user-profiles/approve/<int:user_id>/', ApproveUserAPI.as_view(), name='approve-user'), 
     path('assign-role/<int:user_id>/', AssignRoleAPI.as_view(), name='assign_role'),
+    path('user-profiles/<int:pk>/', UserProfileAPI.as_view(), name='user-profile-update'),
     
 
     # Library List (Public Access)
