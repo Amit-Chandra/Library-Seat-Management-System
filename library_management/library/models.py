@@ -20,7 +20,7 @@ def save_user_profile(sender, instance, **kwargs):
 class Library(models.Model):
     name = models.CharField(max_length=100)
     location = models.CharField(max_length=255)  # Keeps location information
-    total_seats = models.PositiveIntegerField()
+    total_seats = models.PositiveIntegerField(default=10)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
