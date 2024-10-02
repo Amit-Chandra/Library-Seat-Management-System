@@ -57,26 +57,7 @@ def calculate_distance(user_location, library_location):
 
 
 
-# class SignupAPI(generics.CreateAPIView):
-#     serializer_class = UserSignupSerializer
-
-#     def create(self, request, *args, **kwargs):
-#         serializer = self.get_serializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         user = serializer.save()
-
-#         # Create UserProfile for the new user
-#         UserProfile.objects.create(
-#             user=user,
-#             dob=request.data.get('dob'),
-#             hobbies=request.data.get('hobbies'),
-#             contact_number=request.data.get('contact_number'),
-#             latitude=request.data.get('latitude'),
-#             longitude=request.data.get('longitude')
-#         )
-        
-#         return Response({"message": "Student registered successfully"}, status=status.HTTP_201_CREATED)
-
+# ========================= Signup API ============================
 
 
 class SignupAPI(generics.CreateAPIView):
@@ -103,78 +84,7 @@ class SignupAPI(generics.CreateAPIView):
 
 
 
-# ========================= Login API with User Role and Approval ============================
-
-
-
-
-
 # ========================= Login API ============================
-
-# class LoginAPI(APIView):
-#     def post(self, request):
-#         username = request.data.get('username')
-#         password = request.data.get('password')
-        
-#         user = authenticate(username=username, password=password)
-        
-#         if user is not None:
-#             try:
-#                 # Get the UserProfile for the authenticated user
-#                 user_profile = UserProfile.objects.get(user=user)
-#             except UserProfile.DoesNotExist:
-#                 return Response({"error": "User profile not found"}, status=status.HTTP_404_NOT_FOUND)
-
-#             # Check approval status
-#             if not user_profile.approved:
-#                 # User is not approved, return libraries near their location
-#                 user_lat = request.data.get('latitude')
-#                 user_lng = request.data.get('longitude')
-
-#                 if user_lat and user_lng:
-#                     user_location = (float(user_lat), float(user_lng))
-#                     libraries = Library.objects.all()
-#                     nearby_libraries = []
-                    
-#                     for library in libraries:
-#                         library_location = (library.latitude, library.longitude)
-#                         distance = calculate_distance(user_location, library_location)
-#                         nearby_libraries.append({
-#                             'name': library.name,
-#                             'location': library.location,
-#                             'distance': f"{distance:.2f} km",
-#                             'owner': library.owner.username if library.owner else "No Owner",
-#                             'seat_availability': library.seats.filter(is_occupied=False).count()
-#                         })
-                    
-#                     return Response({
-#                         "message": "User is not approved, but here are nearby libraries.",
-#                         "libraries": nearby_libraries
-#                     }, status=status.HTTP_200_OK)
-
-#                 return Response({"message": "User is not approved and no location data was provided"}, status=status.HTTP_403_FORBIDDEN)
-
-#             # Handle role-based logic if the user is approved
-#             if user_profile.role == 'student':
-#                 return Response({
-#                     "message": "Student login successful",
-#                     "profile": UserProfileSerializer(user_profile).data
-#                 }, status=status.HTTP_200_OK)
-            
-#             elif user_profile.role == 'admin':
-#                 if user_profile.library:
-#                     return Response({
-#                         "message": "Admin login successful",
-#                         "library": LibrarySerializer(user_profile.library).data
-#                     }, status=status.HTTP_200_OK)
-#                 else:
-#                     return Response({"error": "Admin does not have an assigned library"}, status=status.HTTP_403_FORBIDDEN)
-
-#             return Response({"message": "Login successful"}, status=status.HTTP_200_OK)
-
-#         else:
-#             return Response({"error": "Invalid username or password"}, status=status.HTTP_401_UNAUTHORIZED)
-
 
 
 class LoginAPI(APIView):
@@ -249,31 +159,6 @@ class LoginAPI(APIView):
                     "message": "Student login successful",
                     "profile": UserProfileSerializer(user_profile).data
                 }, status=status.HTTP_200_OK)
-            
-            # elif user_profile.role == 'admin':
-            #     if user_profile.library:
-            #         # Admin is approved and has a library assigned, return library details and students
-            #         students_in_library = user_profile.library.students.all()
-            #         seat_availability = user_profile.library.seats.filter(is_occupied=False).count()
-                    
-            #         return Response({
-            #             "message": "Admin login successful",
-            #             "profile": UserProfileSerializer(user_profile).data,
-            #             "library": {
-            #                 "details": LibrarySerializer(user_profile.library).data,
-            #                 "students": UserProfileSerializer(students_in_library, many=True).data,
-            #                 "seat_availability": seat_availability
-            #             }
-            #         }, status=status.HTTP_200_OK)
-            #     else:
-            #         # Admin is approved but no library is assigned, return list of libraries
-            #         all_libraries = Library.objects.all()
-
-            #         return Response({
-            #             "message": "Admin login successful but no library assigned",
-            #             "profile": UserProfileSerializer(user_profile).data,
-            #             "libraries": LibrarySerializer(all_libraries, many=True).data
-            #         }, status=status.HTTP_200_OK)
 
             elif user_profile.role == 'admin':
                 if user_profile.library:
@@ -310,6 +195,9 @@ class LoginAPI(APIView):
 
 
 # ========================= Library List API with Geo-location ============================
+
+
+
 class LibraryListAPI(APIView):
     # Removed authentication requirement to allow public access
     def get(self, request):
@@ -346,7 +234,11 @@ class LibraryListAPI(APIView):
 
         return Response(library_data)
 
+
+
+
 # ========================= Seat Availability API ============================
+
 class SeatAvailabilityAPI(APIView):
     def get(self, request, library_id):
         library = get_object_or_404(Library, id=library_id)
@@ -358,42 +250,6 @@ class SeatAvailabilityAPI(APIView):
         })
 
 # ========================= Create Library API with Geo-location ============================
-
-
-# class CreateLibraryAPI(APIView):
-    permission_classes = [IsAdminUser]
-
-    def post(self, request):
-        serializer = LibrarySerializer(data=request.data)
-        if serializer.is_valid():
-            # library = serializer.save()
-            library = serializer.save(owner=request.user)
-            library.latitude = request.data.get('latitude')
-            library.longitude = request.data.get('longitude')
-            library.save()
-            return Response({'message': 'Library created successfully'}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-# class CreateLibraryAPI(APIView):
-#     permission_classes = [IsAdminUser]
-
-#     def post(self, request):
-#         serializer = LibrarySerializer(data=request.data)
-#         if serializer.is_valid():
-#             # Create the library and assign the current user as the owner
-#             library = serializer.save(owner=request.user)
-#             library.latitude = request.data.get('latitude')
-#             library.longitude = request.data.get('longitude')
-#             library.save()
-
-#             # Add seats to the newly created library
-#             number_of_seats = request.data.get('total_seats', 10)  # Default to 10 seats if not provided
-#             for seat_number in range(1, number_of_seats + 1):
-#                 Seat.objects.create(library=library, seat_number=seat_number, is_occupied=False)
-
-#             return Response({'message': 'Library created successfully'}, status=status.HTTP_201_CREATED)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CreateLibraryAPI(APIView):
@@ -425,6 +281,7 @@ class CreateLibraryAPI(APIView):
 
 
 # ========================= Update Library API ============================
+
 class UpdateLibraryAPI(APIView):
     permission_classes = [IsAdminUser]
     
@@ -444,6 +301,7 @@ class UpdateLibraryAPI(APIView):
 
 
 # ========================= Update Student Profile API ============================
+
 class UpdateStudentProfileAPI(APIView):
     def put(self, request, user_id):
         user_profile = get_object_or_404(UserProfile, user__id=user_id)
@@ -460,24 +318,6 @@ class UpdateStudentProfileAPI(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
-
-# UserProfileAPI to create and retrieve user profiles
-
-# class UserProfileAPI(APIView):
-#     permission_classes = [IsAuthenticated]
-
-#     def get(self, request, *args, **kwargs):
-#         profiles = UserProfile.objects.all()
-#         serializer = UserProfileSerializer(profiles, many=True)
-#         return Response(serializer.data)
-
-#     def post(self, request, *args, **kwargs):
-#         serializer = UserProfileSerializer(data=request.data)
-#         if serializer.is_valid():
-#             serializer.save(user=request.user)
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserProfileAPI(APIView):
@@ -512,6 +352,8 @@ class UserProfileAPI(APIView):
 
 
 # ========================= Approve Users API ============================
+
+
 class ApproveUserAPI(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -528,6 +370,7 @@ class ApproveUserAPI(APIView):
 
 
 # ========================= Assign Role API ============================
+
 class AssignRoleAPI(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -620,15 +463,183 @@ class DeleteLibraryAPI(DestroyAPIView):
 
 
 
+# class SignupAPI(generics.CreateAPIView):
+#     serializer_class = UserSignupSerializer
+
+#     def create(self, request, *args, **kwargs):
+#         serializer = self.get_serializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+#         user = serializer.save()
+
+#         # Create UserProfile for the new user
+#         UserProfile.objects.create(
+#             user=user,
+#             dob=request.data.get('dob'),
+#             hobbies=request.data.get('hobbies'),
+#             contact_number=request.data.get('contact_number'),
+#             latitude=request.data.get('latitude'),
+#             longitude=request.data.get('longitude')
+#         )
+        
+#         return Response({"message": "Student registered successfully"}, status=status.HTTP_201_CREATED)
 
 
 
 
 
+# ========================= Login API with User Role and Approval ============================
+
+
+
+# class LoginAPI(APIView):
+#     def post(self, request):
+#         username = request.data.get('username')
+#         password = request.data.get('password')
+        
+#         user = authenticate(username=username, password=password)
+        
+#         if user is not None:
+#             try:
+#                 # Get the UserProfile for the authenticated user
+#                 user_profile = UserProfile.objects.get(user=user)
+#             except UserProfile.DoesNotExist:
+#                 return Response({"error": "User profile not found"}, status=status.HTTP_404_NOT_FOUND)
+
+#             # Check approval status
+#             if not user_profile.approved:
+#                 # User is not approved, return libraries near their location
+#                 user_lat = request.data.get('latitude')
+#                 user_lng = request.data.get('longitude')
+
+#                 if user_lat and user_lng:
+#                     user_location = (float(user_lat), float(user_lng))
+#                     libraries = Library.objects.all()
+#                     nearby_libraries = []
+                    
+#                     for library in libraries:
+#                         library_location = (library.latitude, library.longitude)
+#                         distance = calculate_distance(user_location, library_location)
+#                         nearby_libraries.append({
+#                             'name': library.name,
+#                             'location': library.location,
+#                             'distance': f"{distance:.2f} km",
+#                             'owner': library.owner.username if library.owner else "No Owner",
+#                             'seat_availability': library.seats.filter(is_occupied=False).count()
+#                         })
+                    
+#                     return Response({
+#                         "message": "User is not approved, but here are nearby libraries.",
+#                         "libraries": nearby_libraries
+#                     }, status=status.HTTP_200_OK)
+
+#                 return Response({"message": "User is not approved and no location data was provided"}, status=status.HTTP_403_FORBIDDEN)
+
+#             # Handle role-based logic if the user is approved
+#             if user_profile.role == 'student':
+#                 return Response({
+#                     "message": "Student login successful",
+#                     "profile": UserProfileSerializer(user_profile).data
+#                 }, status=status.HTTP_200_OK)
+            
+#             elif user_profile.role == 'admin':
+#                 if user_profile.library:
+#                     return Response({
+#                         "message": "Admin login successful",
+#                         "library": LibrarySerializer(user_profile.library).data
+#                     }, status=status.HTTP_200_OK)
+#                 else:
+#                     return Response({"error": "Admin does not have an assigned library"}, status=status.HTTP_403_FORBIDDEN)
+
+#             return Response({"message": "Login successful"}, status=status.HTTP_200_OK)
+
+#         else:
+#             return Response({"error": "Invalid username or password"}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 
 
+            
+            # elif user_profile.role == 'admin':
+            #     if user_profile.library:
+            #         # Admin is approved and has a library assigned, return library details and students
+            #         students_in_library = user_profile.library.students.all()
+            #         seat_availability = user_profile.library.seats.filter(is_occupied=False).count()
+                    
+            #         return Response({
+            #             "message": "Admin login successful",
+            #             "profile": UserProfileSerializer(user_profile).data,
+            #             "library": {
+            #                 "details": LibrarySerializer(user_profile.library).data,
+            #                 "students": UserProfileSerializer(students_in_library, many=True).data,
+            #                 "seat_availability": seat_availability
+            #             }
+            #         }, status=status.HTTP_200_OK)
+            #     else:
+            #         # Admin is approved but no library is assigned, return list of libraries
+            #         all_libraries = Library.objects.all()
+
+            #         return Response({
+            #             "message": "Admin login successful but no library assigned",
+            #             "profile": UserProfileSerializer(user_profile).data,
+            #             "libraries": LibrarySerializer(all_libraries, many=True).data
+            #         }, status=status.HTTP_200_OK)
+
+
+
+# class CreateLibraryAPI(APIView):
+    # permission_classes = [IsAdminUser]
+
+    # def post(self, request):
+    #     serializer = LibrarySerializer(data=request.data)
+    #     if serializer.is_valid():
+    #         # library = serializer.save()
+    #         library = serializer.save(owner=request.user)
+    #         library.latitude = request.data.get('latitude')
+    #         library.longitude = request.data.get('longitude')
+    #         library.save()
+    #         return Response({'message': 'Library created successfully'}, status=status.HTTP_201_CREATED)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# class CreateLibraryAPI(APIView):
+#     permission_classes = [IsAdminUser]
+
+#     def post(self, request):
+#         serializer = LibrarySerializer(data=request.data)
+#         if serializer.is_valid():
+#             # Create the library and assign the current user as the owner
+#             library = serializer.save(owner=request.user)
+#             library.latitude = request.data.get('latitude')
+#             library.longitude = request.data.get('longitude')
+#             library.save()
+
+#             # Add seats to the newly created library
+#             number_of_seats = request.data.get('total_seats', 10)  # Default to 10 seats if not provided
+#             for seat_number in range(1, number_of_seats + 1):
+#                 Seat.objects.create(library=library, seat_number=seat_number, is_occupied=False)
+
+#             return Response({'message': 'Library created successfully'}, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+# UserProfileAPI to create and retrieve user profiles
+
+# class UserProfileAPI(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request, *args, **kwargs):
+#         profiles = UserProfile.objects.all()
+#         serializer = UserProfileSerializer(profiles, many=True)
+#         return Response(serializer.data)
+
+#     def post(self, request, *args, **kwargs):
+#         serializer = UserProfileSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save(user=request.user)
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 
