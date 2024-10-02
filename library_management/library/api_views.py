@@ -37,6 +37,18 @@ from .models import Library, UserProfile
 from .serializers import LibrarySerializer
 import logging
 
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.contrib.auth import authenticate
+from django.shortcuts import get_object_or_404
+from rest_framework.permissions import IsAuthenticated
+from .models import UserProfile, Library
+from .serializers import UserProfileSerializer, LibrarySerializer
+from django.contrib.auth.models import User
+from geopy.distance import geodesic
+
 logger = logging.getLogger(__name__)
 
 # ========================= Helper Function ============================
@@ -93,16 +105,7 @@ class SignupAPI(generics.CreateAPIView):
 
 # ========================= Login API with User Role and Approval ============================
 
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from django.contrib.auth import authenticate
-from django.shortcuts import get_object_or_404
-from rest_framework.permissions import IsAuthenticated
-from .models import UserProfile, Library
-from .serializers import UserProfileSerializer, LibrarySerializer
-from django.contrib.auth.models import User
-from geopy.distance import geodesic
+
 
 
 
