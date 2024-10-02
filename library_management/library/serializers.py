@@ -1,9 +1,319 @@
+from django.conf import settings
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import Library, Seat, UserProfile
 import logging
+import random
+from django.core.mail import send_mail
 
 logger = logging.getLogger(__name__)
+
+
+class SeatSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Seat
+        fields = ['id', 'number', 'status']
+
+
+# ==================================================
+
+
+class LibrarySerializer(serializers.ModelSerializer):
+    total_seats = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Library
+        fields = ['id', 'name', 'location', 'total_seats', 'owner', 'latitude', 'longitude', 'image']
+
+    def get_total_seats(self, obj):
+        try:
+            occupied_seats = obj.seats.filter(is_occupied=True).count()
+            total_seats = obj.total_seats - occupied_seats
+            return total_seats
+        except Exception as e:
+            logger.error(f"Error calculating total seats: {e}")
+            raise serializers.ValidationError("Error calculating total seats")
+
+
+# Serializer for User model to include in UserProfile
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'first_name', 'last_name']  # Include fields you need
+
+
+
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(source='user.email', read_only=True)
+    username = serializers.CharField(source='user.username', read_only=True)
+    first_name = serializers.CharField(source='user.first_name', required=False)
+    last_name = serializers.CharField(source='user.last_name', required=False)
+
+    class Meta:
+        model = UserProfile
+        fields = ['id', 'role', 'dob', 'hobbies', 'contact_number', 'location', 'latitude', 'longitude', 'library', 'email', 'username', 'first_name', 'last_name']
+
+    def update(self, instance, validated_data):
+        # Update the User model fields for email, first_name, last_name
+        user_data = validated_data.pop('user', {})
+        instance.user.email = user_data.get('email', instance.user.email)
+        instance.user.first_name = user_data.get('first_name', instance.user.first_name)
+        instance.user.last_name = user_data.get('last_name', instance.user.last_name)
+        instance.user.save()
+
+        # Update the UserProfile model fields
+        return super().update(instance, validated_data)
+
+
+
+class UserSignupSerializer(serializers.ModelSerializer):
+    role = serializers.ChoiceField(choices=['admin', 'student'], required=True)
+
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'password', 'role']
+
+    def create(self, validated_data):
+        user = User(
+            username=validated_data['username'],
+            email=validated_data['email']
+        )
+        user.set_password(validated_data['password'])
+        user.save()
+
+        # Automatically assign role (student/admin)
+        role = validated_data['role']
+        user_profile = UserProfile.objects.create(user=user, role=role)
+
+        # You can handle email verification logic here if needed
+        verification_code = random.randint(100000, 999999)
+        user_profile.verification_code = verification_code
+        user_profile.save()
+
+        # Send email verification code
+        send_mail(
+            'Library Seat Management: Verify Your Account',
+            f'Your verification code is {verification_code}',
+            settings.DEFAULT_FROM_EMAIL,
+            [user.email],
+        )
+
+        return user
+
+
+
+class ApproveUserSerializer(serializers.ModelSerializer):
+    role = serializers.ChoiceField(choices=['admin', 'student'], required=True)
+
+    class Meta:
+        model = UserProfile
+        fields = ['role']
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# =============================================== Last Working =================================================
+
+
+# from rest_framework import serializers
+# from django.contrib.auth.models import User
+# from .models import Library, Seat, UserProfile
+# import logging
+
+# logger = logging.getLogger(__name__)
+
+
+# class SeatSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Seat
+#         fields = ['id', 'number', 'status']
+
+
+# # ==================================================
+
+
+
+
+# class LibrarySerializer(serializers.ModelSerializer):
+#     total_seats = serializers.SerializerMethodField()
+
+#     class Meta:
+#         model = Library
+#         fields = ['id', 'name', 'location', 'total_seats', 'owner', 'latitude', 'longitude']
+
+#     def get_total_seats(self, obj):
+#         try:
+#             occupied_seats = obj.seats.filter(is_occupied=True).count()
+#             total_seats = obj.total_seats - occupied_seats
+#             return total_seats
+#         except Exception as e:
+#             logger.error(f"Error calculating total seats: {e}")
+#             raise serializers.ValidationError("Error calculating total seats")
+
+#     def create(self, validated_data):
+#         logger.debug(f"Creating Library with data: {validated_data}")
+#         try:
+#             library = Library.objects.create(**validated_data)
+#             logger.info(f"Library created successfully: {library}")
+#             return library
+#         except Exception as e:
+#             logger.error(f"Error creating Library: {e}")
+#             raise serializers.ValidationError("Failed to create library")
+        
+#     def update(self, instance, validated_data):
+#         instance.name = validated_data.get('name', instance.name)
+#         instance.location = validated_data.get('location', instance.location)
+#         instance.total_seats = validated_data.get('total_seats', instance.total_seats)
+#         instance.latitude = validated_data.get('latitude', instance.latitude)
+#         instance.longitude = validated_data.get('longitude', instance.longitude)
+#         instance.save()
+#         return instance
+
+
+
+
+# # Serializer for User model to include in UserProfile
+# class UserSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = User
+#         fields = ['id', 'username', 'email', 'first_name', 'last_name']  # Include fields you need
+
+# # UserProfileSerializer updated to include nested User details
+# class UserProfileSerializer(serializers.ModelSerializer):
+#     # user = UserSerializer(read_only=True)
+#     email = serializers.EmailField(source='user.email', read_only=True)
+#     username = serializers.CharField(source='user.username', read_only=True)
+#     first_name = serializers.CharField(source='user.first_name', required=False)
+#     last_name = serializers.CharField(source='user.last_name', required=False)
+
+#     class Meta:
+#         model = UserProfile
+#         fields = ['id', 'role', 'dob', 'hobbies', 'contact_number', 'location', 'latitude', 'longitude', 'approved', 'library', 'email', 'username', 'first_name', 'last_name']
+
+
+#     def update(self, instance, validated_data):
+#         # Update the User model fields for email, username, first_name, last_name
+#         user_data = validated_data.pop('user', {})
+#         instance.user.email = user_data.get('email', instance.user.email)
+#         instance.user.username = user_data.get('username', instance.user.username)
+#         instance.user.first_name = user_data.get('first_name', instance.user.first_name)
+#         instance.user.last_name = user_data.get('last_name', instance.user.last_name)
+#         instance.user.save()
+
+#         # Update the UserProfile model fields
+#         return super().update(instance, validated_data)
+
+
+
+
+# class UserSignupSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = User
+#         fields = ['username', 'email', 'password']
+
+#     def create(self, validated_data):
+#         user = User(
+#             username=validated_data['username'],
+#             email=validated_data['email']
+#         )
+#         user.set_password(validated_data['password'])
+#         user.save()
+#         return user
+
+
+# class ApproveUserSerializer(serializers.ModelSerializer):
+#     role = serializers.ChoiceField(choices=['admin', 'student'], required=True)
+
+#     class Meta:
+#         model = UserProfile
+#         fields = ['role']
+
+
+
+
+
+
+# =============================================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # class StudentSignupSerializer(serializers.ModelSerializer):
 #     password = serializers.CharField(write_only=True)
@@ -32,14 +342,6 @@ logger = logging.getLogger(__name__)
 #         model = Library
 #         fields = ['id', 'name', 'location']
 
-
-class SeatSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Seat
-        fields = ['id', 'number', 'status']
-
-
-# ==================================================
 
 
 
@@ -94,40 +396,6 @@ class SeatSerializer(serializers.ModelSerializer):
 
 
 
-class LibrarySerializer(serializers.ModelSerializer):
-    total_seats = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Library
-        fields = ['id', 'name', 'location', 'total_seats', 'owner', 'latitude', 'longitude']
-
-    def get_total_seats(self, obj):
-        try:
-            occupied_seats = obj.seats.filter(is_occupied=True).count()
-            total_seats = obj.total_seats - occupied_seats
-            return total_seats
-        except Exception as e:
-            logger.error(f"Error calculating total seats: {e}")
-            raise serializers.ValidationError("Error calculating total seats")
-
-    def create(self, validated_data):
-        logger.debug(f"Creating Library with data: {validated_data}")
-        try:
-            library = Library.objects.create(**validated_data)
-            logger.info(f"Library created successfully: {library}")
-            return library
-        except Exception as e:
-            logger.error(f"Error creating Library: {e}")
-            raise serializers.ValidationError("Failed to create library")
-        
-    def update(self, instance, validated_data):
-        instance.name = validated_data.get('name', instance.name)
-        instance.location = validated_data.get('location', instance.location)
-        instance.total_seats = validated_data.get('total_seats', instance.total_seats)
-        instance.latitude = validated_data.get('latitude', instance.latitude)
-        instance.longitude = validated_data.get('longitude', instance.longitude)
-        instance.save()
-        return instance
 
 
 
@@ -152,60 +420,3 @@ class LibrarySerializer(serializers.ModelSerializer):
 #         return obj.seats.filter(is_occupied=False).count()
 
 
-
-
-# Serializer for User model to include in UserProfile
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name']  # Include fields you need
-
-# UserProfileSerializer updated to include nested User details
-class UserProfileSerializer(serializers.ModelSerializer):
-    # user = UserSerializer(read_only=True)
-    email = serializers.EmailField(source='user.email', read_only=True)
-    username = serializers.CharField(source='user.username', read_only=True)
-    first_name = serializers.CharField(source='user.first_name', required=False)
-    last_name = serializers.CharField(source='user.last_name', required=False)
-
-    class Meta:
-        model = UserProfile
-        fields = ['id', 'role', 'dob', 'hobbies', 'contact_number', 'location', 'latitude', 'longitude', 'approved', 'library', 'email', 'username', 'first_name', 'last_name']
-
-
-    def update(self, instance, validated_data):
-        # Update the User model fields for email, username, first_name, last_name
-        user_data = validated_data.pop('user', {})
-        instance.user.email = user_data.get('email', instance.user.email)
-        instance.user.username = user_data.get('username', instance.user.username)
-        instance.user.first_name = user_data.get('first_name', instance.user.first_name)
-        instance.user.last_name = user_data.get('last_name', instance.user.last_name)
-        instance.user.save()
-
-        # Update the UserProfile model fields
-        return super().update(instance, validated_data)
-
-
-
-
-class UserSignupSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['username', 'email', 'password']
-
-    def create(self, validated_data):
-        user = User(
-            username=validated_data['username'],
-            email=validated_data['email']
-        )
-        user.set_password(validated_data['password'])
-        user.save()
-        return user
-
-
-class ApproveUserSerializer(serializers.ModelSerializer):
-    role = serializers.ChoiceField(choices=['admin', 'student'], required=True)
-
-    class Meta:
-        model = UserProfile
-        fields = ['role']
